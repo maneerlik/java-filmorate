@@ -21,7 +21,6 @@ public class UserControllerTest extends BaseTest {
 
     @InjectMocks
     private UserController controller;
-
     private User user;
 
     @BeforeEach

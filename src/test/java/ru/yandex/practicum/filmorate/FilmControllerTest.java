@@ -21,9 +21,8 @@ public class FilmControllerTest extends BaseTest {
 
     @InjectMocks
     private FilmController controller;
-
     private Film film;
-    
+
     @BeforeEach
     public void setUp() {
         film = new Film();
