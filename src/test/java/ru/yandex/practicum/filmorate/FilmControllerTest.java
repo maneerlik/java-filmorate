@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate;
 import jakarta.validation.groups.Default;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.time.LocalDate;
@@ -19,12 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class FilmControllerTest extends BaseTest {
 
-    @InjectMocks
     private FilmController controller;
     private Film film;
 
     @BeforeEach
     public void setUp() {
+        controller = new FilmController(new FilmService());
+
         film = new Film();
         film.setId(1L);
         film.setName("Interstellar");

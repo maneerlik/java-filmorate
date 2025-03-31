@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate;
 import jakarta.validation.groups.Default;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.time.LocalDate;
@@ -19,12 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class UserControllerTest extends BaseTest {
 
-    @InjectMocks
     private UserController controller;
     private User user;
 
     @BeforeEach
     public void setUp() {
+        controller = new UserController(new UserService());
+
         user = new User();
         user.setId(1L);
         user.setEmail("test@gmail.com");

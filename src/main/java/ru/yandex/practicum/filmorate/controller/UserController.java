@@ -1,52 +1,39 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.util.Objects.nonNull;
 
 @RestController
 @Slf4j
-@Validated
 @RequestMapping("/users")
 public class UserController {
+    private final UserService userService;
 
-    private final Map<Long, User> users = new HashMap<>();
-    private long nextId = 1L;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
 
     @PostMapping
-    public User create(@Valid @RequestBody User user) {
-        user.setId(nextId++);
-        users.put(user.getId(), user);
-        log.info("User created: {}", user);
-        return user;
+    public User create(@RequestBody User user) {
+        User createdUser = userService.create(user);
+        log.info("User created: {}", createdUser);
+        return createdUser;
     }
 
     @PutMapping
-    public User update(@Validated(UpdateValidationGroup.class) @RequestBody User newUser) {
-        if (!users.containsKey(newUser.getId()))
-            throw new NotFoundException(String.format("User with id=%s not found", newUser.getId()));
-
-        User oldUser = users.get(newUser.getId());
-        if (nonNull(newUser.getEmail())) oldUser.setEmail(newUser.getEmail());
-        if (nonNull(newUser.getLogin())) oldUser.setLogin(newUser.getLogin());
-        if (!newUser.getName().equals(newUser.getLogin())) oldUser.setName(newUser.getName());
-        if (nonNull(newUser.getBirthday())) oldUser.setBirthday(newUser.getBirthday());
-        log.info("User updated: {}", oldUser);
-        return oldUser;
+    public User update(@RequestBody User newUser) {
+        User userUpdated = userService.update(newUser);
+        log.info("User updated: {}", userUpdated);
+        return userUpdated;
     }
 
     @GetMapping
     public Collection<User> findAll() {
-        return users.values();
+        return userService.findAll();
     }
 }
