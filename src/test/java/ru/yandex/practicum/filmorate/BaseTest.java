@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 import java.util.Set;
 
-@SpringBootTest
 public abstract class BaseTest {
 
     // TODO: уменьшить дублирование кода в тестах контроллеров

@@ -1,50 +1,71 @@
 package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exception.FriendshipException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.util.Objects.nonNull;
 
 @Service
+@Slf4j
 @Validated
 public class UserService {
-    private final Map<Long, User> users = new HashMap<>();
-    private long nextId = 1L;
+    private final UserStorage userStorage;
 
-    @PostMapping
+    @Autowired
+    public UserService(UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
+
+
     public User create(@Valid @RequestBody User user) {
-        user.setId(nextId++);
-        users.put(user.getId(), user);
-        return user;
+        User createdUser = userStorage.createUser(user);
+        log.info("User created: {}", createdUser);
+        return createdUser;
     }
 
-    @PutMapping
-    public User update(@Validated(UpdateValidationGroup.class) @RequestBody User newUser) {
-        if (!users.containsKey(newUser.getId()))
-            throw new NotFoundException(String.format("User with id=%s not found", newUser.getId()));
-
-        User oldUser = users.get(newUser.getId());
-        if (nonNull(newUser.getEmail())) oldUser.setEmail(newUser.getEmail());
-        if (nonNull(newUser.getLogin())) oldUser.setLogin(newUser.getLogin());
-        if (!newUser.getName().equals(newUser.getLogin())) oldUser.setName(newUser.getName());
-        if (nonNull(newUser.getBirthday())) oldUser.setBirthday(newUser.getBirthday());
-        return oldUser;
+    public void addFriend(Long userId, Long friendId) {
+        userStorage.addFriend(userId, friendId)
+                .orElseThrow(() -> new FriendshipException("Failed to add friend"));
+        log.info("Friendship created between {} and {}", userId, friendId);
     }
 
-    @GetMapping
+    public User getUser(Long userId) {
+        return userStorage.getUser(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    public Collection<User> getFriends(Long userId) {
+        return userStorage.getFriends(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    public Collection<User> getCommonFriends(Long userId, Long friendId) {
+        return userStorage.getCommonFriends(userId, friendId)
+                .orElseThrow(() -> new FriendshipException("Common friends not found"));
+    }
+
     public Collection<User> findAll() {
-        return users.values();
+        return userStorage.getAllUsers();
+    }
+
+    public User update(@Validated(UpdateValidationGroup.class) @RequestBody User user) {
+        User updatedUser = userStorage.updateUser(user);
+        log.info("User updated: {}", updatedUser);
+        return updatedUser;
+    }
+
+    public void removeFriend(Long userId, Long friendId) {
+        userStorage.removeFriend(userId, friendId)
+                .orElseThrow(() -> new FriendshipException("Friendship not found"));
+        log.info("Friendship removed between {} and {}", userId, friendId);
     }
 }

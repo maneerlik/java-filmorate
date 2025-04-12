@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 import ru.yandex.practicum.filmorate.validation.film.ReleaseDate;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Класс {@code Film} - модель фильма
@@ -32,6 +34,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 public class Film {
+    private final Set<Long> likes = new HashSet<>();
 
     @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
     private Long id;

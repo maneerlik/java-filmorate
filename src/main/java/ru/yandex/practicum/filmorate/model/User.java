@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Класс {@code User} - модель пользователя
@@ -28,6 +30,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 public class User {
+    private final Set<Long> friends = new HashSet<>();
 
     @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
     private Long id;
