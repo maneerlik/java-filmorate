@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate;
 import jakarta.validation.groups.Default;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.time.LocalDate;
@@ -16,7 +16,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
 public class UserControllerTest extends BaseTest {
 
     private UserController controller;
@@ -24,7 +23,9 @@ public class UserControllerTest extends BaseTest {
 
     @BeforeEach
     public void setUp() {
-        controller = new UserController(new UserService());
+        InMemoryUserStorage storage = new InMemoryUserStorage();
+        UserService service = new UserService(storage);
+        controller = new UserController(service);
 
         user = new User();
         user.setId(1L);

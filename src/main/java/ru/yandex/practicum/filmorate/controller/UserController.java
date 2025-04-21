@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -19,21 +20,52 @@ public class UserController {
 
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public User create(@RequestBody User user) {
-        User createdUser = userService.create(user);
-        log.info("User created: {}", createdUser);
-        return createdUser;
+        return userService.create(user);
     }
 
-    @PutMapping
-    public User update(@RequestBody User newUser) {
-        User userUpdated = userService.update(newUser);
-        log.info("User updated: {}", userUpdated);
-        return userUpdated;
+    @GetMapping("/{id}")
+    public User getById(@PathVariable Long id) {
+        return userService.getUser(id);
     }
 
     @GetMapping
     public Collection<User> findAll() {
         return userService.findAll();
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable Long id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(
+            @PathVariable Long id,
+            @PathVariable Long otherId
+    ) {
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    @PutMapping
+    public User update(@RequestBody User newUser) {
+        return userService.update(newUser);
+    }
+
+    @PutMapping("/{id}/friends/{otherId}")
+    public void addFriend(
+        @PathVariable Long id,
+        @PathVariable Long otherId
+    ) {
+        userService.addFriend(id, otherId);
+    }
+
+    @DeleteMapping("/{id}/friends/{otherId}")
+    public void removeFriend(
+            @PathVariable Long id,
+            @PathVariable Long otherId
+    ) {
+        userService.removeFriend(id, otherId);
     }
 }

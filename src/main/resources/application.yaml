@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: filmorate
+
+logging:
+  level:
+    org:
+      zalando:
+        logbook: TRACE

@@ -1,43 +1,75 @@
 package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.exception.LikeException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.util.Objects.nonNull;
+import java.util.Optional;
 
 @Service
+@Slf4j
 @Validated
 public class FilmService {
-    private final Map<Long, Film> films = new HashMap<>();
-    private long nextId = 1L;
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
 
-    public Film create(@Valid Film film) {
-        film.setId(nextId++);
-        films.put(film.getId(), film);
-        return film;
+    @Autowired
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
-    public Film update(@Validated(UpdateValidationGroup.class) Film newFilm) {
-        if (!films.containsKey(newFilm.getId()))
-            throw new NotFoundException(String.format("Film with id=%s not found", newFilm.getId()));
 
-        Film oldFilm = films.get(newFilm.getId());
-        if (nonNull(newFilm.getName())) oldFilm.setName(newFilm.getName());
-        if (nonNull(newFilm.getDescription())) oldFilm.setDescription(newFilm.getDescription());
-        if (nonNull(newFilm.getReleaseDate())) oldFilm.setReleaseDate(newFilm.getReleaseDate());
-        if (nonNull(newFilm.getDuration())) oldFilm.setDuration(newFilm.getDuration());
-        return oldFilm;
+    public Film create(@Valid Film film) {
+        Film createdFilm = filmStorage.createFilm(film);
+        log.info("Film created: {}", createdFilm);
+        return createdFilm;
+    }
+
+    public void addLike(Long filmId, Long userId) {
+        validateFilmAndUserExist(filmId, userId);
+        filmStorage.addLike(filmId, userId)
+                .orElseThrow(() -> new LikeException("Failed to add like"));
+        log.info("Like added to film {} by user {}", filmId, userId);
+    }
+
+    public Optional<Film> getFilm(Long id) {
+        return filmStorage.getFilm(id);
+    }
+
+    public Collection<Film> getPopularFilms(int count) {
+        if (count <= 0) throw new IllegalArgumentException("Count must be positive");
+        return filmStorage.getPopularFilms(count);
     }
 
     public Collection<Film> findAll() {
-        return films.values();
+        return filmStorage.getAllFilms();
+    }
+
+    public Film update(@Validated(UpdateValidationGroup.class) Film film) {
+        Film updatedFilm = filmStorage.updateFilm(film);
+        log.info("Film updated: {}", updatedFilm);
+        return updatedFilm;
+    }
+
+    public void removeLike(Long filmId, Long userId) {
+        validateFilmAndUserExist(filmId, userId);
+        filmStorage.removeLike(filmId, userId)
+                .orElseThrow(() -> new LikeException("Like not found"));
+        log.debug("Like removed from film {} by user {}", filmId, userId);
+    }
+
+    private void validateFilmAndUserExist(Long filmId, Long userId) {
+        if (filmStorage.getFilm(filmId).isEmpty()) throw new NotFoundException("Film not found");
+        if (userStorage.getUser(userId).isEmpty()) throw new NotFoundException("User not found");
     }
 }
