@@ -36,6 +36,8 @@ import java.util.Set;
 public class Film {
     private final Set<Long> likes = new HashSet<>();
 
+    private Set<Genre> genres = new HashSet<>();
+
     @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
     private Long id;
 
@@ -60,4 +62,6 @@ public class Film {
             groups = {Default.class, UpdateValidationGroup.class}
     )
     private Long duration;
+
+    private MpaRating mpa;
 }
