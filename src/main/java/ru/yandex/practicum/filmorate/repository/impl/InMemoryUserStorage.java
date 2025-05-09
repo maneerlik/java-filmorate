@@ -1,10 +1,10 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.repository.impl;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ConflictException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 import java.util.*;
 
@@ -76,7 +76,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) {
+    public Optional<User> updateUser(User user) {
         long userId = user.getId();
         User existUser = users.get(userId);
 
@@ -93,7 +93,7 @@ public class InMemoryUserStorage implements UserStorage {
         updatedUser.setBirthday(getOrDefault(user.getBirthday(), existUser.getBirthday()));
 
         users.put(userId, updatedUser);
-        return updatedUser;
+        return Optional.of(updatedUser);
     }
 
     private boolean updateFriendship(Long userId, Long friendId, boolean add) {

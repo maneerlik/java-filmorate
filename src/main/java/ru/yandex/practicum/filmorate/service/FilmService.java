@@ -8,8 +8,8 @@ import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.LikeException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
+import ru.yandex.practicum.filmorate.repository.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.util.Collection;
@@ -46,13 +46,13 @@ public class FilmService {
         return filmStorage.getFilm(id);
     }
 
+    public Collection<Film> findAll() {
+        return filmStorage.getAllFilms();
+    }
+
     public Collection<Film> getPopularFilms(int count) {
         if (count <= 0) throw new IllegalArgumentException("Count must be positive");
         return filmStorage.getPopularFilms(count);
-    }
-
-    public Collection<Film> findAll() {
-        return filmStorage.getAllFilms();
     }
 
     public Film update(@Validated(UpdateValidationGroup.class) Film film) {

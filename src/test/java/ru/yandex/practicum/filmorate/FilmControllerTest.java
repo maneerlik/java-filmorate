@@ -7,8 +7,8 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.repository.impl.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.repository.impl.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.time.LocalDate;

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.groups.Default;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
@@ -33,10 +34,8 @@ import java.util.Set;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class Film {
-    private final Set<Long> likes = new HashSet<>();
-
-    private Set<Genre> genres = new HashSet<>();
 
     @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
     private Long id;
@@ -63,5 +62,10 @@ public class Film {
     )
     private Long duration;
 
+    @NotNull(message = "MPAA rating cannot be empty", groups = Default.class)
     private MpaRating mpa;
+
+    private Set<Genre> genres = new HashSet<>();
+
+    private Set<Long> likes = new HashSet<>();
 }
