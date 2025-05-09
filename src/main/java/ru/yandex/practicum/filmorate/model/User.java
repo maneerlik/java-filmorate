@@ -30,7 +30,6 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 public class User {
-    private final Set<Long> friends = new HashSet<>();
 
     @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
     private Long id;
@@ -51,11 +50,13 @@ public class User {
 
     private String name;
 
-    @PastOrPresent(
+    @Past(
             message = "Birthday cannot be in the future",
             groups = {Default.class, UpdateValidationGroup.class}
     )
     private LocalDate birthday;
+
+    private Set<Long> friends = new HashSet<>();
 
 
     public String getName() {

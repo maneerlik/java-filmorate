@@ -34,9 +34,6 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 public class Film {
-    private final Set<Long> likes = new HashSet<>();
-
-    private Set<Genre> genres = new HashSet<>();
 
     @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
     private Long id;
@@ -63,5 +60,10 @@ public class Film {
     )
     private Long duration;
 
+    @NotNull(message = "MPAA rating cannot be empty", groups = Default.class)
     private MpaRating mpa;
+
+    private Set<Genre> genres = new HashSet<>();
+
+    private Set<Long> likes = new HashSet<>();
 }
