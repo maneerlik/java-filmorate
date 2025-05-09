@@ -35,14 +35,14 @@ public abstract class BaseDbStorageTest {
     // user
     protected String email;
     protected String login;
-    protected String user_name;
+    protected String userName;
     protected LocalDate birthday;
     protected Set<Long> friends;
 
     // film
-    protected String film_name;
+    protected String filmName;
     protected String description;
-    protected LocalDate release_date;
+    protected LocalDate releaseDate;
     protected Long duration;
     protected MpaRating mpa;
     protected Set<Genre> genres;
@@ -52,17 +52,17 @@ public abstract class BaseDbStorageTest {
     protected void setUp() {
         email = getRandomEmail();
         login = getRandomLogin();
-        user_name = getRandomUserName();
+        userName = getRandomUserName();
         birthday = getRandomPastDate();
 
-        user = new User(null, email, login, user_name, birthday, friends);
+        user = new User(null, email, login, userName, birthday, friends);
 
-        film_name = getRandomFilmName();
+        filmName = getRandomFilmName();
         description = getRandomDescription();
-        release_date = getRandomReleaseDate();
+        releaseDate = getRandomReleaseDate();
         duration = getRandomDuration();
         mpa = getRandomMpa();
 
-        film = new Film(null, film_name, description, release_date, duration, mpa, genres, likes);
+        film = new Film(null, filmName, description, releaseDate, duration, mpa, genres, likes);
     }
 }

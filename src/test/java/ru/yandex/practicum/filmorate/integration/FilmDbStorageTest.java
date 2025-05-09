@@ -22,9 +22,9 @@ public class FilmDbStorageTest extends BaseDbStorageTest {
                 .isNotNull()
                 .satisfies(f -> {
                     assertThat(f.getId()).isNotNull();
-                    assertThat(f.getName()).isEqualTo(film_name);
+                    assertThat(f.getName()).isEqualTo(filmName);
                     assertThat(f.getDescription()).isEqualTo(description);
-                    assertThat(f.getReleaseDate()).isEqualTo(release_date);
+                    assertThat(f.getReleaseDate()).isEqualTo(releaseDate);
                     assertThat(f.getDuration()).isEqualTo(duration);
                     assertThat(f.getMpa()).isEqualTo(mpa);
                 });

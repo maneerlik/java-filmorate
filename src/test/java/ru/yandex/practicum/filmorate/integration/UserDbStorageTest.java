@@ -31,7 +31,7 @@ class UserDbStorageTest extends BaseDbStorageTest {
                     assertThat(u.getId()).isNotNull();
                     assertThat(u.getEmail()).isEqualTo(email);
                     assertThat(u.getLogin()).isEqualTo(login);
-                    assertThat(u.getName()).isEqualTo(user_name);
+                    assertThat(u.getName()).isEqualTo(userName);
                     assertThat(u.getBirthday()).isEqualTo(birthday);
                 });
     }
@@ -47,7 +47,7 @@ class UserDbStorageTest extends BaseDbStorageTest {
                     assertThat(foundUser.getId()).isEqualTo(id);
                     assertThat(foundUser.getEmail()).isEqualTo(email);
                     assertThat(foundUser.getLogin()).isEqualTo(login);
-                    assertThat(foundUser.getName()).isEqualTo(user_name);
+                    assertThat(foundUser.getName()).isEqualTo(userName);
                     assertThat(foundUser.getBirthday()).isEqualTo(birthday);
                 });
     }
@@ -73,7 +73,7 @@ class UserDbStorageTest extends BaseDbStorageTest {
                     assertThat(updatedUser.getId()).isEqualTo(id);
                     assertThat(updatedUser.getEmail()).isEqualTo(email);
                     assertThat(updatedUser.getLogin()).isEqualTo(login);
-                    assertThat(updatedUser.getName()).isEqualTo(user_name);
+                    assertThat(updatedUser.getName()).isEqualTo(userName);
                     assertThat(updatedUser.getBirthday()).isEqualTo(birthday);
                 });
     }
