@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
 import jakarta.validation.groups.Default;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
@@ -29,6 +30,7 @@ import java.util.Set;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
