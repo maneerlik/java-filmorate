@@ -5,14 +5,12 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.repository.impl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.repository.impl.UserDbStorage;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 import static ru.yandex.practicum.filmorate.util.TestDataGenerator.*;
@@ -46,6 +44,7 @@ public abstract class BaseDbStorageTest {
     protected Long duration;
     protected MpaRating mpa;
     protected Set<Genre> genres;
+    protected Set<Director> directors;
     protected Set<Long> likes;
 
 
@@ -63,6 +62,6 @@ public abstract class BaseDbStorageTest {
         duration = getRandomDuration();
         mpa = getRandomMpa();
 
-        film = new Film(null, filmName, description, releaseDate, duration, mpa, genres, likes);
+        film = new Film(null, filmName, description, releaseDate, duration, mpa, genres, directors, likes);
     }
 }
