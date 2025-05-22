@@ -78,6 +78,7 @@ public class DirectorDbStorage extends BaseDbStorage implements DirectorStorage 
     @Override
     public Optional<Director> getDirector(Long id) {
         Objects.requireNonNull(id, "Director id cannot be null");
+        checkEntityExists(id, EntityType.DIRECTOR);
 
         DirectorDto directorDto = jdbc.queryForObject(FIND_DIRECTOR_BY_ID, new DirectorDtoRowMapper(), id);
 

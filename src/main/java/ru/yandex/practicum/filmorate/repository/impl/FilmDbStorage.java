@@ -159,7 +159,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
                 FROM film_directors
                 WHERE director_id = ?
             )
-            ORDER BY f.release_date DESC;
+            ORDER BY f.release_date ASC;
             """;
 
     private static final String FIND_FILMS_DIRECTORS_FOR_LIKES = """
@@ -304,12 +304,12 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     //--- Получение фильмов режиссера, отсортированных по годам или лайкам ---------------------------------------------
     public Collection<Film> getFilmsDirector(Long directorId, String sortBy) {
         List<FilmDto> films = new ArrayList<>();
-        if (sortBy.equals("like")) {
+        if (sortBy.equals("likes")) {
             films = jdbc.query(FIND_FILMS_DIRECTORS_FOR_LIKES, new FilmRowMapper(), directorId);
         } else if (sortBy.equals("year")) {
             films = jdbc.query(FIND_FILMS_DIRECTORS_FOR_DATES, new FilmRowMapper(), directorId);
         } else {
-            throw new IllegalArgumentException("sortBy must be 'like' or 'year'");
+            throw new IllegalArgumentException("sortBy must be 'likes' or 'year'");
         }
 
         // загрузить жанры, режиссеров и лайки для всех фильмов
