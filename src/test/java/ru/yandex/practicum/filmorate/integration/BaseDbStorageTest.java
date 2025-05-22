@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.repository.impl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.repository.impl.UserDbStorage;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 import static ru.yandex.practicum.filmorate.util.TestDataGenerator.*;
