@@ -19,4 +19,6 @@ public interface FilmStorage {
     Film updateFilm(Film film);
 
     Optional<Boolean> removeLike(Long filmId, Long userId);
+
+    Collection<Film> getFilmsDirector(Long filmId, String sortBy);
 }
