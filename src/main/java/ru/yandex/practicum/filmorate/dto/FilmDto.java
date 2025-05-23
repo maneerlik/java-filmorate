@@ -22,4 +22,5 @@ public class FilmDto {
     private Set<GenreDto> genres;
     private Set<DirectorDto> directors;
     private Set<Long> likes;
+    private Set<DirectorDto> directors;
 }

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.rowmapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.dto.MpaRatingDto;
@@ -18,6 +19,7 @@ public class FilmRowMapper implements RowMapper<FilmDto> {
     public FilmDto mapRow(ResultSet rs, int rowNum) throws SQLException {
         Set<GenreDto> genres = new HashSet<>();
         Set<Long> likes = new HashSet<>();
+        Set<DirectorDto> directors = new HashSet<>();
 
         // жанры и лайки будут загружены и добавлены в filmDto отдельным запросом
         return FilmDto.builder()
@@ -33,6 +35,7 @@ public class FilmRowMapper implements RowMapper<FilmDto> {
                         .build())
                 .genres(genres)
                 .likes(likes)
+                .directors(directors)
                 .build();
     }
 }

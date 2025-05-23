@@ -21,6 +21,9 @@ public class FilmDtoMapper {
                         .map(DirectorDtoMapper::toDirectorDto)
                         .collect(Collectors.toSet()))
                 .likes(film.getLikes())
+                .directors(film.getDirectors().stream()
+                        .map(DirectorDtoMapper::toDirectorDto)
+                        .collect(Collectors.toSet()))
                 .build();
     }
 }

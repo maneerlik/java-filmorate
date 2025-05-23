@@ -8,6 +8,7 @@ import jakarta.validation.groups.Default;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 import ru.yandex.practicum.filmorate.validation.film.ReleaseDate;
 

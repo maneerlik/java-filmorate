@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @RestController
 @Slf4j
@@ -75,6 +76,15 @@ public class FilmController {
             @PathVariable Long userId
     ) {
         filmService.removeLike(id, userId);
+    }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> searchFilms(
+            @RequestParam String query,
+            @RequestParam List<String> by
+    ) {
+        return filmService.searchFilms(query, by);
     }
 
     @DeleteMapping("/{filmId}")

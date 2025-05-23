@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.repository.impl;
 
+import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +14,7 @@ import ru.yandex.practicum.filmorate.mapper.entity.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.enumeration.SearchParameter;
 import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.rowmapper.DirectorDtoRowMapper;
@@ -189,6 +191,22 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             WHERE id = ?;
             """;
 
+    private static final String BASE_SEARCH_FILMS_BY_CONDITIONS = """
+            SELECT f.*,
+                   mr.id mpa_id,
+                   mr.name mpa_name,
+                   mr.description mpa_description
+            FROM films f
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id 
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS likes_count
+                FROM film_likes
+                GROUP BY film_id
+            ) fl ON f.id = fl.film_id
+            LEFT JOIN film_directors fd ON f.id = fd.film_id
+            LEFT JOIN directors d ON fd.director_id = d.id
+            WHERE 
+            """;
 
     public FilmDbStorage(final JdbcTemplate jdbc) {
         super(jdbc);
@@ -240,7 +258,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
 
         if (filmDto != null) {
             // загрузить жанры, режиссеров и лайки
-            enrichFilmWithGenresAndLikes(filmDto);
+            enrichFilmWithGenresLikesAndDirectors(filmDto);
             return Optional.of(FilmMapper.toFilm(filmDto));
         }
 
@@ -253,7 +271,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         List<FilmDto> allFilms = jdbc.query(FIND_FILMS_QUERY, new FilmRowMapper());
 
         // загрузить жанры, режиссеров и лайки для всех фильмов
-        allFilms.forEach(this::enrichFilmWithGenresAndLikes);
+        allFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
 
         return allFilms.stream()
                 .map(FilmMapper::toFilm)
@@ -266,7 +284,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         List<FilmDto> popularFilms = jdbc.query(FIND_POPULAR_FILMS_QUERY, new FilmRowMapper(), count);
 
         // загрузить жанры, режиссеров и лайки для выбранных фильмов
-        popularFilms.forEach(this::enrichFilmWithGenresAndLikes);
+        popularFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
 
         return popularFilms.stream()
                 .map(FilmMapper::toFilm)
@@ -307,6 +325,30 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         return Optional.of(rowsAffected > 0);
     }
 
+    //--- Поиск фильмов ------------------------------------------------------------------------------------------------
+    @Override
+    public Collection<Film> searchFilms(String query, List<SearchParameter> searchParameters) {
+        String separator = "OR ";
+        String parameterSetting = " LIKE '%" + query.toLowerCase() + "%' ";
+
+        List<String> stringSearchParameters = searchParameters.stream()
+                .map(searchParameter -> "LOWER(" + searchParameter.getSqlField() + ")" + parameterSetting)
+                .toList();
+        String queryCondition = Joiner.on(separator).join(stringSearchParameters) + """
+                ORDER BY likes_count,
+                f.id;
+                """;
+
+        List<FilmDto> foundFilms = jdbc.query(BASE_SEARCH_FILMS_BY_CONDITIONS + queryCondition,
+                new FilmRowMapper());
+
+        // загрузить жанры, лайки и режиссеров для найденных фильмов
+        foundFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
+
+        return foundFilms.stream()
+                .map(FilmMapper::toFilm)
+                .toList();
+    }
     //--- Получение фильмов режиссера, отсортированных по годам или лайкам ---------------------------------------------
     public Collection<Film> getFilmsDirector(Long directorId, String sortBy) {
         List<FilmDto> films = new ArrayList<>();
