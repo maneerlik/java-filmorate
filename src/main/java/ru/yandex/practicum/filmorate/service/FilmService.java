@@ -72,4 +72,8 @@ public class FilmService {
         if (filmStorage.getFilm(filmId).isEmpty()) throw new NotFoundException("Film not found");
         if (userStorage.getUser(userId).isEmpty()) throw new NotFoundException("User not found");
     }
+
+    public Collection<Film> getFilmsDirector(Long id, String sortBy) {
+        return filmStorage.getFilmsDirector(id, sortBy);
+    }
 }
