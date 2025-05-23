@@ -258,7 +258,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
 
         if (filmDto != null) {
             // загрузить жанры, режиссеров и лайки
-            enrichFilmWithGenresLikesAndDirectors(filmDto);
+            enrichFilmWithGenresAndLikes(filmDto);
             return Optional.of(FilmMapper.toFilm(filmDto));
         }
 
@@ -271,7 +271,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         List<FilmDto> allFilms = jdbc.query(FIND_FILMS_QUERY, new FilmRowMapper());
 
         // загрузить жанры, режиссеров и лайки для всех фильмов
-        allFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
+        allFilms.forEach(this::enrichFilmWithGenresAndLikes);
 
         return allFilms.stream()
                 .map(FilmMapper::toFilm)
@@ -284,7 +284,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         List<FilmDto> popularFilms = jdbc.query(FIND_POPULAR_FILMS_QUERY, new FilmRowMapper(), count);
 
         // загрузить жанры, режиссеров и лайки для выбранных фильмов
-        popularFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
+        popularFilms.forEach(this::enrichFilmWithGenresAndLikes);
 
         return popularFilms.stream()
                 .map(FilmMapper::toFilm)
@@ -343,7 +343,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
                 new FilmRowMapper());
 
         // загрузить жанры, лайки и режиссеров для найденных фильмов
-        foundFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
+        foundFilms.forEach(this::enrichFilmWithGenresAndLikes);
 
         return foundFilms.stream()
                 .map(FilmMapper::toFilm)
