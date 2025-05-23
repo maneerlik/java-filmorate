@@ -356,7 +356,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
                 new FilmRowMapper());
 
         // загрузить жанры, лайки и режиссеров для найденных фильмов
-        foundFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
+        foundFilms.forEach(this::enrichFilmWithGenresAndLikes);
 
         return foundFilms.stream()
                 .map(FilmMapper::toFilm)
