@@ -1,3 +1,4 @@
+/*
 package ru.yandex.practicum.filmorate.repository.impl;
 
 import org.springframework.stereotype.Component;
@@ -88,3 +89,4 @@ public class InMemoryFilmStorage implements FilmStorage {
         return nonNull(value) ? value : defaultValue;
     }
 }
+*/

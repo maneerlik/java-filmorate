@@ -120,6 +120,11 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             AND user_id = ?;
             """;
 
+    private static final String DELETE_FILM_BY_ID = """
+            DELETE FROM films
+            WHERE id = ?;
+            """;
+
 
     public FilmDbStorage(final JdbcTemplate jdbc) {
         super(jdbc);
@@ -164,6 +169,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     //--- Получение фильма по id ---------------------------------------------------------------------------------------
     @Override
     public Optional<Film> getFilm(Long id) {
+        checkEntityExists(id, EntityType.FILM);
         FilmDto filmDto = jdbc.queryForObject(FIND_FILM_BY_ID_QUERY, new FilmRowMapper(), id);
 
         if (filmDto != null) {
@@ -229,6 +235,13 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     public Optional<Boolean> removeLike(Long filmId, Long userId) {
         int rowsAffected = jdbc.update(DELETE_FILM_LIKES_BY_FILM_AND_USER_ID, filmId, userId);
         return Optional.of(rowsAffected > 0);
+    }
+
+    //--- Удаление фильма по id ----------------------------------------------------------------------------------------
+    @Override
+    public void deleteFilmById(Long filmId) {
+        jdbc.update(DELETE_FILM_BY_ID, filmId);
+        log.info("Deleted film with id: {}", filmId);
     }
 
 

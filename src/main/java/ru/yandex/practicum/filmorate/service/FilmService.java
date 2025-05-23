@@ -72,4 +72,10 @@ public class FilmService {
         if (filmStorage.getFilm(filmId).isEmpty()) throw new NotFoundException("Film not found");
         if (userStorage.getUser(userId).isEmpty()) throw new NotFoundException("User not found");
     }
+
+    public void deleteFilmById(Long filmId) {
+        filmStorage.getFilm(filmId)
+            .orElseThrow(() -> new NotFoundException("Film not found"));
+        filmStorage.deleteFilmById(filmId);
+    }
 }
