@@ -202,6 +202,11 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             LEFT JOIN directors d ON fd.director_id = d.id
             WHERE
             """;
+    private static final String DELETE_FILM_BY_ID = """
+            DELETE FROM films
+            WHERE id = ?;
+            """;
+
 
     private static final String SORT_FOR_SEARCH_QUERY = """
             ORDER BY likes_count,
@@ -261,6 +266,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     //--- Получение фильма по id ---------------------------------------------------------------------------------------
     @Override
     public Optional<Film> getFilm(Long id) {
+        checkEntityExists(id, EntityType.FILM);
         FilmDto filmDto = jdbc.queryForObject(FIND_FILM_BY_ID_QUERY, new FilmRowMapper(), id);
 
         if (filmDto != null) {
@@ -394,6 +400,13 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         }, new FilmRowMapper());
 
     }
+    //--- Удаление фильма по id ----------------------------------------------------------------------------------------
+    @Override
+    public void deleteFilmById(Long filmId) {
+        jdbc.update(DELETE_FILM_BY_ID, filmId);
+        log.info("Deleted film with id: {}", filmId);
+    }
+
 
     //--- Вспомогательные методы ---------------------------------------------------------------------------------------
     private void checkGenreExists(Genre genre) {

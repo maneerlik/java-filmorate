@@ -99,6 +99,11 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
             WHERE (user_id = ? AND friend_id = ?);
             """;
 
+    private static final String DELETE_USER_BY_ID = """
+            DELETE FROM users
+            WHERE id = ?;
+            """;
+
     public UserDbStorage(JdbcTemplate jdbc) {
         super(jdbc);
     }
@@ -130,6 +135,7 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
     //--- Получить пользователя по id ----------------------------------------------------------------------------------
     @Override
     public Optional<User> getUser(Long id) {
+        checkUserExists(id);
         Objects.requireNonNull(id, "User id cannot be null");
 
         UserDto userDto = jdbc.queryForObject(FIND_USER_BY_ID, new UserRowMapper(), id);
@@ -249,6 +255,12 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
                 .toList());
     }
 
+    //--- Удалить пользователя по id -----------------------------------------------------------------------------------
+    @Override
+    public void deleteUserById(Long userId) {
+        jdbc.update(DELETE_USER_BY_ID, userId);
+        log.info("Successfully deleted user with id: {}", userId);
+    }
 
     //--- Вспомогательные методы ---------------------------------------------------------------------------------------
     private void checkUserExists(Long userId) {
