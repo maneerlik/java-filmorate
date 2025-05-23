@@ -20,6 +20,7 @@ public class FilmDto {
     private Long duration;
     private MpaRatingDto mpa;
     private Set<GenreDto> genres;
+    private Set<DirectorDto> directors;
     private Set<Long> likes;
     private Set<DirectorDto> directors;
 }

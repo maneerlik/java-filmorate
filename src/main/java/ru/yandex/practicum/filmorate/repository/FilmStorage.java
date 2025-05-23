@@ -23,4 +23,6 @@ public interface FilmStorage {
     Optional<Boolean> removeLike(Long filmId, Long userId);
 
     Collection<Film> searchFilms(String query, List<SearchParameter> searchParameters);
+
+    Collection<Film> getFilmsDirector(Long filmId, String sortBy);
 }

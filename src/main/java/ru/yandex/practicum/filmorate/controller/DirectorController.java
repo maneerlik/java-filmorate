@@ -44,4 +44,8 @@ public class DirectorController {
     public void remove(@PathVariable Long id) {
         directorService.removeDirector(id);
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> add-director
