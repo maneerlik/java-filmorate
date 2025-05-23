@@ -192,7 +192,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
                    mr.name mpa_name,
                    mr.description mpa_description
             FROM films f
-            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id 
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id
             LEFT JOIN (
                 SELECT film_id, COUNT(*) AS likes_count
                 FROM film_likes
@@ -200,7 +200,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             ) fl ON f.id = fl.film_id
             LEFT JOIN film_directors fd ON f.id = fd.film_id
             LEFT JOIN directors d ON fd.director_id = d.id
-            WHERE 
+            WHERE
             """;
 
     public FilmDbStorage(final JdbcTemplate jdbc) {
