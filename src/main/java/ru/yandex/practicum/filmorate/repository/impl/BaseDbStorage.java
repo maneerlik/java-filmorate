@@ -40,6 +40,12 @@ public class BaseDbStorage {
             WHERE id = ?;
             """;
 
+    protected static final String CHECK_EXISTS_DIRECTOR_BY_ID_QUERY = """
+            SELECT COUNT(*)
+            FROM directors
+            WHERE id = ?;
+            """;
+
     protected final JdbcTemplate jdbc;
 
     public BaseDbStorage(final JdbcTemplate jdbc) {
@@ -65,6 +71,7 @@ public class BaseDbStorage {
             case FILM -> CHECK_EXISTS_FILM_BY_ID_QUERY;
             case MPA_RATING -> CHECK_EXISTS_MPA_RATING_BY_ID_QUERY;
             case GENRE -> CHECK_EXISTS_GENRE_BY_ID_QUERY;
+            case DIRECTOR -> CHECK_EXISTS_DIRECTOR_BY_ID_QUERY;
         };
     }
 }

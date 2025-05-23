@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/changes/001-create-tables.sql
   - include:
       file: db/changelog/changes/002-init-data.sql
+  - include:
+      file: db/changelog/changes/003-create-tables-films_directors.sql

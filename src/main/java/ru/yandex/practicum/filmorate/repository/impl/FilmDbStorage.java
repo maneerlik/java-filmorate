@@ -1,18 +1,23 @@
 package ru.yandex.practicum.filmorate.repository.impl;
 
+import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.mapper.entity.FilmMapper;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.enumeration.SearchParameter;
 import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
+import ru.yandex.practicum.filmorate.rowmapper.DirectorDtoRowMapper;
 import ru.yandex.practicum.filmorate.rowmapper.FilmRowMapper;
 import ru.yandex.practicum.filmorate.rowmapper.GenreDtoRowMapper;
 
@@ -31,7 +36,7 @@ import java.util.*;
  * Аннотации:
  * @Repository - указывает, что класс является компонентом Spring Data Access Layer
  * @Primary - указывает на предпочтительную реализацию бина
- * @Slf4j - обеспечивает логгирование через SLF4J
+ * @Slf4j - обеспечивает логирование через SLF4J
  */
 
 @Repository
@@ -48,6 +53,10 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
 
     private static final String INSERT_FILM_GENRE_QUERY = """
             INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?);
+            """;
+
+    private static final String INSERT_FILM_DIRECTOR_QUERY = """
+            INSERT INTO film_directors (film_id, director_id) VALUES (?, ?);
             """;
 
     private static final String FIND_FILM_BY_ID_QUERY = """
@@ -98,6 +107,15 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             WHERE fg.film_id = ?;
             """;
 
+    private static final String FIND_DIRECTORS_ID_BY_FILM_ID_QUERY = """
+            SELECT d.id,
+                   d.name
+            FROM directors d
+            JOIN film_directors fd
+            ON d.id = fd.director_id
+            WHERE fd.film_id = ?;
+            """;
+
     private static final String FIND_LIKES_BY_FILM_ID_QUERY = """
             SELECT user_id
             FROM film_likes
@@ -120,6 +138,22 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             AND user_id = ?;
             """;
 
+    private static final String BASE_SEARCH_FILMS_BY_CONDITIONS = """
+            SELECT f.*,
+                   mr.id mpa_id,
+                   mr.name mpa_name,
+                   mr.description mpa_description
+            FROM films f
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id 
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS likes_count
+                FROM film_likes
+                GROUP BY film_id
+            ) fl ON f.id = fl.film_id
+            LEFT JOIN film_directors fd ON f.id = fd.film_id
+            LEFT JOIN directors d ON fd.director_id = d.id
+            WHERE 
+            """;
 
     public FilmDbStorage(final JdbcTemplate jdbc) {
         super(jdbc);
@@ -150,6 +184,8 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         // Сохранение жанров фильма
         saveFilmGenres(filmId, film.getGenres());
 
+        saveFilmDirectors(filmId, film.getDirectors());
+
         log.info("Created new film with id: {}", filmId);
         return film;
     }
@@ -168,7 +204,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
 
         if (filmDto != null) {
             // загрузить жанры и лайки
-            enrichFilmWithGenresAndLikes(filmDto);
+            enrichFilmWithGenresLikesAndDirectors(filmDto);
             return Optional.of(FilmMapper.toFilm(filmDto));
         }
 
@@ -181,7 +217,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         List<FilmDto> allFilms = jdbc.query(FIND_FILMS_QUERY, new FilmRowMapper());
 
         // загрузить жанры и лайки для всех фильмов
-        allFilms.forEach(this::enrichFilmWithGenresAndLikes);
+        allFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
 
         return allFilms.stream()
                 .map(FilmMapper::toFilm)
@@ -194,7 +230,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         List<FilmDto> popularFilms = jdbc.query(FIND_POPULAR_FILMS_QUERY, new FilmRowMapper(), count);
 
         // загрузить жанры и лайки для выбранных фильмов
-        popularFilms.forEach(this::enrichFilmWithGenresAndLikes);
+        popularFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
 
         return popularFilms.stream()
                 .map(FilmMapper::toFilm)
@@ -231,6 +267,30 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         return Optional.of(rowsAffected > 0);
     }
 
+    //--- Поиск фильмов ------------------------------------------------------------------------------------------------
+    @Override
+    public Collection<Film> searchFilms(String query, List<SearchParameter> searchParameters) {
+        String separator = "OR ";
+        String parameterSetting = " LIKE '%" + query.toLowerCase() + "%' ";
+
+        List<String> stringSearchParameters = searchParameters.stream()
+                .map(searchParameter -> "LOWER(" + searchParameter.getSqlField() + ")" + parameterSetting)
+                .toList();
+        String queryCondition = Joiner.on(separator).join(stringSearchParameters) + """
+                ORDER BY likes_count,
+                f.id;
+                """;
+
+        List<FilmDto> foundFilms = jdbc.query(BASE_SEARCH_FILMS_BY_CONDITIONS + queryCondition,
+                new FilmRowMapper());
+
+        // загрузить жанры, лайки и режиссеров для найденных фильмов
+        foundFilms.forEach(this::enrichFilmWithGenresLikesAndDirectors);
+
+        return foundFilms.stream()
+                .map(FilmMapper::toFilm)
+                .toList();
+    }
 
     //--- Вспомогательные методы ---------------------------------------------------------------------------------------
     private void checkGenreExists(Genre genre) {
@@ -252,6 +312,12 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         }
     }
 
+    private void saveFilmDirectors(Long filmId, Set<Director> directors) {
+        if (directors != null && !directors.isEmpty()) {
+            directors.forEach(director -> jdbc.update(INSERT_FILM_DIRECTOR_QUERY, filmId, director.getId()));
+        }
+    }
+
     private Set<GenreDto> loadGenresForFilm(Long filmId) {
         return new HashSet<>(jdbc.query(FIND_GENRES_ID_BY_FILM_ID_QUERY, new GenreDtoRowMapper(), filmId));
     }
@@ -260,9 +326,14 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         return new HashSet<>(jdbc.queryForList(FIND_LIKES_BY_FILM_ID_QUERY, Long.class, filmId));
     }
 
-    private void enrichFilmWithGenresAndLikes(FilmDto filmDto) {
+    private Set<DirectorDto> loadDirectorsForFilm(Long filmId) {
+        return new HashSet<>(jdbc.query(FIND_DIRECTORS_ID_BY_FILM_ID_QUERY, new DirectorDtoRowMapper(), filmId));
+    }
+
+    private void enrichFilmWithGenresLikesAndDirectors(FilmDto filmDto) {
         long filmId = filmDto.getId();
         filmDto.setGenres(loadGenresForFilm(filmId));
         filmDto.setLikes(loadLikesForFilm(filmId));
+        filmDto.setDirectors(loadDirectorsForFilm(filmId));
     }
 }

@@ -19,6 +19,9 @@ public class FilmMapper {
                         .map(GenreMapper::toGenre)
                         .collect(Collectors.toSet()));
         film.setLikes(filmDto.getLikes());
+        film.setDirectors(filmDto.getDirectors().stream()
+                .map(DirectorMapper::toDirector)
+                .collect(Collectors.toSet()));
 
         return film;
     }

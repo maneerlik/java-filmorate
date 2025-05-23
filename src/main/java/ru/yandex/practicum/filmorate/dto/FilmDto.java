@@ -21,4 +21,5 @@ public class FilmDto {
     private MpaRatingDto mpa;
     private Set<GenreDto> genres;
     private Set<Long> likes;
+    private Set<DirectorDto> directors;
 }

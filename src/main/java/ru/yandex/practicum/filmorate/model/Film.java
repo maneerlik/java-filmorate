@@ -8,6 +8,7 @@ import jakarta.validation.groups.Default;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 import ru.yandex.practicum.filmorate.validation.film.ReleaseDate;
 
@@ -66,6 +67,8 @@ public class Film {
     private MpaRating mpa;
 
     private Set<Genre> genres = new HashSet<>();
+
+    private Set<Director> directors = new HashSet<>();
 
     private Set<Long> likes = new HashSet<>();
 }
