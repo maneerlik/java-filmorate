@@ -85,6 +85,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return Optional.of(removed);
     }
 
+    @Override
+    public Collection<Film> getFilmsDirector(Long filmId, String sortBy) {
+        return List.of();
+    }
+
     private <T> T getOrDefault(T value, T defaultValue) {
         return nonNull(value) ? value : defaultValue;
     }
