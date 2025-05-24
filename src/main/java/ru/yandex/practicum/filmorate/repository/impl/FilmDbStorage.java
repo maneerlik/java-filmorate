@@ -400,6 +400,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         }, new FilmRowMapper());
 
     }
+
     //--- Удаление фильма по id ----------------------------------------------------------------------------------------
     @Override
     public void deleteFilmById(Long filmId) {

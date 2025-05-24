@@ -258,6 +258,7 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
     //--- Удалить пользователя по id -----------------------------------------------------------------------------------
     @Override
     public void deleteUserById(Long userId) {
+        checkUserExists(userId);
         jdbc.update(DELETE_USER_BY_ID, userId);
         log.info("Successfully deleted user with id: {}", userId);
     }
