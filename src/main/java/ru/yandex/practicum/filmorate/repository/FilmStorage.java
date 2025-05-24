@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.enumeration.SearchParameter;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,5 +23,5 @@ public interface FilmStorage {
 
     Collection<Film> getFilmsDirector(Long filmId, String sortBy);
 
-    Collection<Film> searchFilms(String query, List<SearchParameter> searchParameters);
+    Collection<Film> searchFilms(String query, List<String> searchParameters);
 }

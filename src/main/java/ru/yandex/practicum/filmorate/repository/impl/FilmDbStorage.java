@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.repository.impl;
 
-import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
+import ru.yandex.practicum.filmorate.exception.SqlParameterException;
 import ru.yandex.practicum.filmorate.mapper.entity.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -203,6 +203,19 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             WHERE
             """;
 
+    private static final String SORT_FOR_SEARCH_QUERY = """
+            ORDER BY likes_count,
+            f.id;
+            """;
+
+    private static final String SEARCH_BY_TITLE = """
+            UPPER(f.name) LIKE ?
+            """;
+
+    private static final String SEARCH_BY_DIRECTOR = """
+            UPPER(d.name) LIKE ?
+            """;
+
     public FilmDbStorage(final JdbcTemplate jdbc) {
         super(jdbc);
     }
@@ -339,21 +352,9 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> searchFilms(String query, List<SearchParameter> searchParameters) {
-        String separator = "OR ";
-        String parameterSetting = " LIKE '%" + query.toLowerCase() + "%' ";
+    public Collection<Film> searchFilms(String query, List<String> searchParameters) {
 
-        List<String> stringSearchParameters = searchParameters.stream()
-                .map(searchParameter -> "LOWER(" + searchParameter.getSqlField() + ")" + parameterSetting)
-                .toList();
-        String queryCondition = Joiner.on(separator).join(stringSearchParameters) + """
-                ORDER BY likes_count,
-                f.id;
-                """;
-
-        List<FilmDto> foundFilms = jdbc.query(BASE_SEARCH_FILMS_BY_CONDITIONS + queryCondition,
-                new FilmRowMapper());
-
+        List<FilmDto> foundFilms = runQueryForSearchFilms(query.toUpperCase(), searchParameters);
         // загрузить жанры, лайки и режиссеров для найденных фильмов
         foundFilms.forEach(this::enrichFilmWithGenresAndLikes);
 
@@ -362,6 +363,37 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
                 .toList();
     }
 
+    private List<FilmDto> runQueryForSearchFilms(String query, List<String> searchParameters) {
+
+        final String SQLQuery;
+
+        if (searchParameters.contains(SearchParameter.DIRECTOR.name()) && searchParameters.contains(SearchParameter.TITLE.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_TITLE + " OR " + SEARCH_BY_DIRECTOR + SORT_FOR_SEARCH_QUERY;
+            return jdbc.query(connection -> {
+                PreparedStatement stmt = connection.prepareStatement(SQLQuery);
+
+                stmt.setString(1, "%" + query + "%");
+                stmt.setString(2, "%" + query + "%");
+
+                return stmt;
+            }, new FilmRowMapper());
+        } else if (searchParameters.contains(SearchParameter.DIRECTOR.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_DIRECTOR + SORT_FOR_SEARCH_QUERY;
+        } else if (searchParameters.contains(SearchParameter.TITLE.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_TITLE + SORT_FOR_SEARCH_QUERY;
+        } else {
+            throw new SqlParameterException("Search condition is not defined");
+        }
+
+        return jdbc.query(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(SQLQuery);
+
+            stmt.setString(1, "%" + query + "%");
+
+            return stmt;
+        }, new FilmRowMapper());
+
+    }
 
     //--- Вспомогательные методы ---------------------------------------------------------------------------------------
     private void checkGenreExists(Genre genre) {

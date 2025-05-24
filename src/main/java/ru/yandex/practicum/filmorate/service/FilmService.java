@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import com.google.common.base.Enums;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,16 +9,13 @@ import ru.yandex.practicum.filmorate.exception.LikeException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.SqlParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.enumeration.SearchParameter;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -84,14 +80,11 @@ public class FilmService {
     }
 
     public Collection<Film> searchFilms(String query, List<String> by) {
-        List<SearchParameter> searchParameterslist = by.stream()
-                .map(string -> Enums.getIfPresent(SearchParameter.class, string.toUpperCase()).orNull())
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(Collectors.toList());
-        if (searchParameterslist.isEmpty()) {
+        if (by.isEmpty()) {
             throw new SqlParameterException("Search condition is not defined");
         }
-        return filmStorage.searchFilms(query, searchParameterslist);
+
+        by.replaceAll(String::toUpperCase);
+        return filmStorage.searchFilms(query, by);
     }
 }
