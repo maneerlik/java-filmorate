@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.repository.impl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.MpaRating;
-import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
 import ru.yandex.practicum.filmorate.rowmapper.MpaRatingRowMapper;
 
@@ -52,11 +51,5 @@ public class MpaRatingDbStorage extends BaseDbStorage implements MpaRatingStorag
     @Override
     public Collection<MpaRating> getAllMpaRatings() {
         return jdbc.query(FIND_ALL_MPA_RATINGS, new MpaRatingRowMapper());
-    }
-
-
-    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkMpaRatingExists(Long ratingId) {
-        checkEntityExists(ratingId, EntityType.MPA_RATING);
     }
 }

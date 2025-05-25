@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -21,7 +20,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Repository
-@Primary
 @Slf4j
 public class DirectorDbStorage extends BaseDbStorage implements DirectorStorage {
     public static final String INSERT_DIRECTOR_QUERY = """

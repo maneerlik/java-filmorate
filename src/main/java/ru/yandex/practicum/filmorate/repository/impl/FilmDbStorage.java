@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -15,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.enumeration.SearchParameter;
-import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.rowmapper.DirectorDtoRowMapper;
 import ru.yandex.practicum.filmorate.rowmapper.FilmRowMapper;
@@ -35,12 +33,10 @@ import java.util.*;
  *
  * Аннотации:
  * @Repository - указывает, что класс является компонентом Spring Data Access Layer
- * @Primary - указывает на предпочтительную реализацию бина
  * @Slf4j - обеспечивает логгирование через SLF4J
  */
 
 @Repository
-@Primary
 @Slf4j
 public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     private static final String INSERT_FILM_QUERY = """
@@ -410,22 +406,6 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
 
 
     //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkGenreExists(Genre genre) {
-        checkEntityExists(genre.getId(), EntityType.GENRE);
-    }
-
-    private void checkDirectorExists(Director director) {
-        checkEntityExists(director.getId(), EntityType.DIRECTOR);
-    }
-
-    private void checkFilmExists(Film film) {
-        checkEntityExists(film.getId(), EntityType.FILM);
-    }
-
-    private void checkMpaRatingExists(Film film) {
-        checkEntityExists(film.getMpa().getId(), EntityType.MPA_RATING);
-    }
-
     private void saveFilmGenres(Long filmId, Set<Genre> genres) {
         if (genres != null && !genres.isEmpty()) {
             genres.forEach(this::checkGenreExists);
