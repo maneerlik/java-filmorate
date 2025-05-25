@@ -7,12 +7,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.LikeException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.SqlParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -75,5 +77,14 @@ public class FilmService {
 
     public Collection<Film> getFilmsDirector(Long id, String sortBy) {
         return filmStorage.getFilmsDirector(id, sortBy);
+    }
+
+    public Collection<Film> searchFilms(String query, List<String> by) {
+        if (by.isEmpty()) {
+            throw new SqlParameterException("Search condition is not defined");
+        }
+
+        by.replaceAll(String::toUpperCase);
+        return filmStorage.searchFilms(query, by);
     }
 }

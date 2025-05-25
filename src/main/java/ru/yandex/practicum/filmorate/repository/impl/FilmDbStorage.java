@@ -8,10 +8,13 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
+import ru.yandex.practicum.filmorate.exception.SqlParameterException;
 import ru.yandex.practicum.filmorate.mapper.entity.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.enumeration.SearchParameter;
+import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.rowmapper.DirectorDtoRowMapper;
 import ru.yandex.practicum.filmorate.rowmapper.FilmRowMapper;
@@ -180,6 +183,35 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             ORDER BY fl.likes_count DESC;
             """;
 
+    private static final String BASE_SEARCH_FILMS_BY_CONDITIONS = """
+            SELECT f.*,
+                   mr.id mpa_id,
+                   mr.name mpa_name,
+                   mr.description mpa_description
+            FROM films f
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS likes_count
+                FROM film_likes
+                GROUP BY film_id
+            ) fl ON f.id = fl.film_id
+            LEFT JOIN film_directors fd ON f.id = fd.film_id
+            LEFT JOIN directors d ON fd.director_id = d.id
+            WHERE
+            """;
+
+    private static final String SORT_FOR_SEARCH_QUERY = """
+            ORDER BY likes_count,
+            f.id;
+            """;
+
+    private static final String SEARCH_BY_TITLE = """
+            UPPER(f.name) LIKE ?
+            """;
+
+    private static final String SEARCH_BY_DIRECTOR = """
+            UPPER(d.name) LIKE ?
+            """;
 
     public FilmDbStorage(final JdbcTemplate jdbc) {
         super(jdbc);
@@ -316,6 +348,49 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
                 .toList();
     }
 
+    @Override
+    public Collection<Film> searchFilms(String query, List<String> searchParameters) {
+
+        List<FilmDto> foundFilms = runQueryForSearchFilms(query.toUpperCase(), searchParameters);
+        // загрузить жанры, лайки и режиссеров для найденных фильмов
+        foundFilms.forEach(this::enrichFilmWithGenresAndLikes);
+
+        return foundFilms.stream()
+                .map(FilmMapper::toFilm)
+                .toList();
+    }
+
+    private List<FilmDto> runQueryForSearchFilms(String query, List<String> searchParameters) {
+
+        final String SQLQuery;
+
+        if (searchParameters.contains(SearchParameter.DIRECTOR.name()) && searchParameters.contains(SearchParameter.TITLE.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_TITLE + " OR " + SEARCH_BY_DIRECTOR + SORT_FOR_SEARCH_QUERY;
+            return jdbc.query(connection -> {
+                PreparedStatement stmt = connection.prepareStatement(SQLQuery);
+
+                stmt.setString(1, "%" + query + "%");
+                stmt.setString(2, "%" + query + "%");
+
+                return stmt;
+            }, new FilmRowMapper());
+        } else if (searchParameters.contains(SearchParameter.DIRECTOR.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_DIRECTOR + SORT_FOR_SEARCH_QUERY;
+        } else if (searchParameters.contains(SearchParameter.TITLE.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_TITLE + SORT_FOR_SEARCH_QUERY;
+        } else {
+            throw new SqlParameterException("Search condition is not defined");
+        }
+
+        return jdbc.query(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(SQLQuery);
+
+            stmt.setString(1, "%" + query + "%");
+
+            return stmt;
+        }, new FilmRowMapper());
+
+    }
 
     //--- Вспомогательные методы ---------------------------------------------------------------------------------------
     private void saveFilmGenres(Long filmId, Set<Genre> genres) {
