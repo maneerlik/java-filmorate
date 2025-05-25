@@ -87,4 +87,10 @@ public class FilmService {
         by.replaceAll(String::toUpperCase);
         return filmStorage.searchFilms(query, by);
     }
+
+    public void deleteFilmById(Long filmId) {
+        filmStorage.getFilm(filmId)
+            .orElseThrow(() -> new NotFoundException("Film not found"));
+        filmStorage.deleteFilmById(filmId);
+    }
 }

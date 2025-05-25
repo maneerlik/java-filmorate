@@ -21,4 +21,6 @@ public interface UserStorage {
     Optional<Collection<User>> getCommonFriends(Long userId, Long friendId);
 
     Optional<Collection<User>> getFriends(Long userId);
+
+    void deleteUserById(Long userId);
 }
