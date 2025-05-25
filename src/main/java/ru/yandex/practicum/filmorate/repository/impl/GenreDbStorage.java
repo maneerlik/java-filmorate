@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.repository.impl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 import ru.yandex.practicum.filmorate.rowmapper.GenreRowMapper;
 
