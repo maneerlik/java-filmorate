@@ -53,10 +53,4 @@ public class MpaRatingDbStorage extends BaseDbStorage implements MpaRatingStorag
     public Collection<MpaRating> getAllMpaRatings() {
         return jdbc.query(FIND_ALL_MPA_RATINGS, new MpaRatingRowMapper());
     }
-
-
-    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkMpaRatingExists(Long ratingId) {
-        checkEntityExists(ratingId, EntityType.MPA_RATING);
-    }
 }

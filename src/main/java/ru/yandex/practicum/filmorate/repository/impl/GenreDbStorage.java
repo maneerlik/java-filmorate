@@ -54,10 +54,4 @@ public class GenreDbStorage extends BaseDbStorage implements GenreStorage {
     public Collection<Genre> getAllGenres() {
         return jdbc.query(FIND_ALL_GENRES, new GenreRowMapper());
     }
-
-
-    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkGenresExist(Long geneId) {
-        checkEntityExists(geneId, EntityType.GENRE);
-    }
 }
