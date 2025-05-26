@@ -52,9 +52,15 @@ public class FilmService {
         return filmStorage.getAllFilms();
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        if (count <= 0) throw new IllegalArgumentException("Count must be positive");
-        return filmStorage.getPopularFilms(count);
+    public Collection<Film> getPopularFilms(int count, Long genreId, int year) {
+        if (genreId == 0 && year == 0) {
+            if (count == 0) count = 10;
+            if (count <= 0) throw new IllegalArgumentException("Count must be positive");
+            return filmStorage.getPopularFilms(count);
+        } else {
+            if (count < 0) throw new IllegalArgumentException("Count must be positive");
+            return filmStorage.getPopularFilmsByGenreAndYear(count, genreId, year);
+        }
     }
 
     public Film update(@Validated(UpdateValidationGroup.class) Film film) {
