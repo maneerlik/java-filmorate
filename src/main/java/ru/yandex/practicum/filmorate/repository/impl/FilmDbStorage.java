@@ -288,6 +288,11 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             UPPER(d.name) LIKE ?
             """;
 
+    private static final int COUNT_IS_ZERO = 0;
+    private static final int ID_GENRE_IS_ZERO = 0;
+    private static final int YEAR_IS_ZERO = 0;
+    private static final int YEAR_IS_1895 = 1895;
+
     public FilmDbStorage(final JdbcTemplate jdbc) {
         super(jdbc);
     }
@@ -375,31 +380,31 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getPopularFilmsByGenreAndYear(int count, Long genreId, int year) {
         List<FilmDto> popularFilms = new ArrayList<>();
-        if (count != 0) {
-            if (genreId != 0 && year >= 1895) {
+        if (count != COUNT_IS_ZERO) {
+            if (genreId != ID_GENRE_IS_ZERO && year >= YEAR_IS_1895) {
                 checkGenresExist(genreId);
                 popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY + FIND_POPULAR_LIMIT,
                         new FilmRowMapper(), genreId, year, count);
-            } else if (genreId != 0) {
+            } else if (genreId != ID_GENRE_IS_ZERO && year == YEAR_IS_ZERO) {
                 checkGenresExist(genreId);
                 popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_QUERY + FIND_POPULAR_LIMIT,
                         new FilmRowMapper(), genreId, count);
-            } else if (year >= 1895) {
+            } else if (year >= YEAR_IS_1895) {
                 popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_YEAR_QUERY + FIND_POPULAR_LIMIT,
                         new FilmRowMapper(), year, count);
             } else {
                 throw new IllegalArgumentException("Release date film is incorrect");
             }
         } else {
-            if (genreId != 0 && year >= 1895) {
+            if (genreId != ID_GENRE_IS_ZERO && year >= YEAR_IS_1895) {
                 checkGenresExist(genreId);
                 popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY + FIND_POPULAR_NOT_LIMIT,
                         new FilmRowMapper(), genreId, year);
-            } else if (genreId != 0) {
+            } else if (genreId != ID_GENRE_IS_ZERO && year == YEAR_IS_ZERO) {
                 checkGenresExist(genreId);
                 popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_QUERY + FIND_POPULAR_NOT_LIMIT,
                         new FilmRowMapper(), genreId);
-            } else if (year >= 1895) {
+            } else if (year >= YEAR_IS_1895) {
                 popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_YEAR_QUERY + FIND_POPULAR_NOT_LIMIT,
                         new FilmRowMapper(), year);
             } else {
