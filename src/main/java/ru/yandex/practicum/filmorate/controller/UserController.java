@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -79,4 +80,9 @@ public class UserController {
         return recommendationService.getRecommendations(id);
     }
 
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.ok().build();
+    }
 }

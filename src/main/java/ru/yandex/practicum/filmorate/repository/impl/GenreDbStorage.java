@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.repository.impl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 import ru.yandex.practicum.filmorate.rowmapper.GenreRowMapper;
 
@@ -53,11 +52,5 @@ public class GenreDbStorage extends BaseDbStorage implements GenreStorage {
     @Override
     public Collection<Genre> getAllGenres() {
         return jdbc.query(FIND_ALL_GENRES, new GenreRowMapper());
-    }
-
-
-    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkGenresExist(Long geneId) {
-        checkEntityExists(geneId, EntityType.GENRE);
     }
 }

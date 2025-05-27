@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.entity.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 import ru.yandex.practicum.filmorate.rowmapper.UserRowMapper;
 
@@ -30,12 +28,10 @@ import java.util.*;
  *
  * Аннотации:
  * @Repository - указывает, что класс является компонентом Spring Data Access Layer
- * @Primary - указывает на предпочтительную реализацию бина
  * @Slf4j - обеспечивает логгирование через SLF4J
  */
 
 @Repository
-@Primary
 @Slf4j
 public class UserDbStorage extends BaseDbStorage implements UserStorage {
     public static final String INSERT_USER_QUERY = """
@@ -99,6 +95,11 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
             WHERE (user_id = ? AND friend_id = ?);
             """;
 
+    private static final String DELETE_USER_BY_ID = """
+            DELETE FROM users
+            WHERE id = ?;
+            """;
+
     public UserDbStorage(JdbcTemplate jdbc) {
         super(jdbc);
     }
@@ -130,6 +131,7 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
     //--- Получить пользователя по id ----------------------------------------------------------------------------------
     @Override
     public Optional<User> getUser(Long id) {
+        checkUserExists(id);
         Objects.requireNonNull(id, "User id cannot be null");
 
         UserDto userDto = jdbc.queryForObject(FIND_USER_BY_ID, new UserRowMapper(), id);
@@ -249,12 +251,15 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
                 .toList());
     }
 
-
-    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkUserExists(Long userId) {
-        checkEntityExists(userId, EntityType.USER);
+    //--- Удалить пользователя по id -----------------------------------------------------------------------------------
+    @Override
+    public void deleteUserById(Long userId) {
+        checkUserExists(userId);
+        jdbc.update(DELETE_USER_BY_ID, userId);
+        log.info("Successfully deleted user with id: {}", userId);
     }
 
+    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
     private Set<Long> loadFriends(Long userId) {
         return new HashSet<>(jdbc.queryForList(FIND_FRIEND_IDS_LIST_OF_USER_BY_USER_ID, Long.class, userId));
     }

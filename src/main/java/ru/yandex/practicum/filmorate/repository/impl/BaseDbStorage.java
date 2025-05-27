@@ -3,6 +3,10 @@ package ru.yandex.practicum.filmorate.repository.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.repository.EntityType;
 
 import java.util.Optional;
@@ -46,6 +50,12 @@ public class BaseDbStorage {
             WHERE id = ?;
             """;
 
+    protected static final String CHECK_EXISTS_REVIEW_BY_ID_QUERY = """
+            SELECT COUNT(*)
+            FROM reviews
+            WHERE id = ?;
+            """;
+
     protected final JdbcTemplate jdbc;
 
     public BaseDbStorage(final JdbcTemplate jdbc) {
@@ -65,6 +75,46 @@ public class BaseDbStorage {
         }
     }
 
+    protected void checkUserExists(Long userId) {
+        checkEntityExists(userId, EntityType.USER);
+    }
+
+    protected void checkGenreExists(Genre genre) {
+        checkEntityExists(genre.getId(), EntityType.GENRE);
+    }
+
+    protected void checkGenresExist(Long geneId) {
+        checkEntityExists(geneId, EntityType.GENRE);
+    }
+
+    protected void checkDirectorExists(Director director) {
+        checkEntityExists(director.getId(), EntityType.DIRECTOR);
+    }
+
+    protected void checkReviewExists(Review review) {
+        checkEntityExists(review.getReviewId(), EntityType.REVIEW);
+    }
+
+    protected void checkReviewExists(Long reviewId) {
+        checkEntityExists(reviewId, EntityType.REVIEW);
+    }
+
+    protected void checkFilmExists(Film film) {
+        checkEntityExists(film.getId(), EntityType.FILM);
+    }
+
+    protected void checkFilmExists(Long filmId) {
+        checkEntityExists(filmId, EntityType.FILM);
+    }
+
+    protected void checkMpaRatingExists(Film film) {
+        checkEntityExists(film.getMpa().getId(), EntityType.MPA_RATING);
+    }
+
+    protected void checkMpaRatingExists(Long ratingId) {
+        checkEntityExists(ratingId, EntityType.MPA_RATING);
+    }
+
     private String getQuery(EntityType type) {
         return switch (type) {
             case USER -> CHECK_EXISTS_USER_BY_ID_QUERY;
@@ -72,6 +122,7 @@ public class BaseDbStorage {
             case MPA_RATING -> CHECK_EXISTS_MPA_RATING_BY_ID_QUERY;
             case GENRE -> CHECK_EXISTS_GENRE_BY_ID_QUERY;
             case DIRECTOR -> CHECK_EXISTS_DIRECTOR_BY_ID_QUERY;
+            case REVIEW -> CHECK_EXISTS_REVIEW_BY_ID_QUERY;
         };
     }
 }
