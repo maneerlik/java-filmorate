@@ -312,7 +312,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
 
     private static final String FIND_LIST_OF_FILM_ID_BY_USER_ID = """
             SELECT film_id
-            FROM film_likes 
+            FROM film_likes
             WHERE user_id = ?;
             """;
 
