@@ -68,6 +68,10 @@ public class FilmService {
         }
     }
 
+    public Collection<Film> getCommonFilms(Long userId, Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     public Film update(@Validated(UpdateValidationGroup.class) Film film) {
         Film updatedFilm = filmStorage.updateFilm(film);
         log.info("Film updated: {}", updatedFilm);
