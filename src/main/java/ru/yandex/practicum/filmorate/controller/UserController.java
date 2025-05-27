@@ -74,16 +74,15 @@ public class UserController {
         return userService.getFriends(id);
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
-        userService.deleteUserById(userId);
-        return ResponseEntity.ok().build();
-    }
-
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}/recommendations")
     public Collection<Film> getRecommendations(@PathVariable Long id) {
         return recommendationService.getRecommendations(id);
     }
 
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.ok().build();
+    }
 }
