@@ -98,7 +98,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             LIMIT ?;
             """;
 
-    private static final String FIND_GENRES_ID_BY_FILM_ID_QUERY = """
+    public static final String FIND_GENRES_ID_BY_FILM_ID_QUERY = """
             SELECT g.id,
                    g.name
             FROM genres g
@@ -107,7 +107,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             WHERE fg.film_id = ?;
             """;
 
-    private static final String FIND_DIRECTORS_ID_BY_FILM_ID_QUERY = """
+    public static final String FIND_DIRECTORS_ID_BY_FILM_ID_QUERY = """
             SELECT d.id,
                    d.name
             FROM directors d
@@ -116,7 +116,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             WHERE fd.film_id = ?;
             """;
 
-    private static final String FIND_LIKES_BY_FILM_ID_QUERY = """
+    public static final String FIND_LIKES_BY_FILM_ID_QUERY = """
             SELECT user_id
             FROM film_likes
             WHERE film_id = ?;
