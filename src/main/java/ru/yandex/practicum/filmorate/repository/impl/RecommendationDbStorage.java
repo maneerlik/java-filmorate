@@ -48,7 +48,7 @@ public class RecommendationDbStorage implements RecommendationStorage {
 
     private static final String FIND_LIST_OF_FILM_ID_BY_USER_ID = """
             SELECT film_id
-            FROM film_likes 
+            FROM film_likes
             WHERE user_id = ?;
             """;
 
@@ -75,7 +75,7 @@ public class RecommendationDbStorage implements RecommendationStorage {
         // Лайки, жанры, режиссеры фильмов
         for (FilmDto filmDto: recommendation) {
             long filmId = filmDto.getId();
-            filmDto.setGenres( new HashSet<>(
+            filmDto.setGenres(new HashSet<>(
                     jdbc.query(FIND_GENRES_ID_BY_FILM_ID_QUERY, new GenreDtoRowMapper(), filmId)));
             filmDto.setDirectors(new HashSet<>(
                     jdbc.query(FIND_DIRECTORS_ID_BY_FILM_ID_QUERY, new DirectorDtoRowMapper(), filmId)));
