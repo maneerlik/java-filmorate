@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.repository.RecommendationStorage;
+import ru.yandex.practicum.filmorate.repository.FilmStorage;
 
 import java.util.Collection;
 
@@ -12,10 +12,10 @@ import java.util.Collection;
 @Validated
 @AllArgsConstructor
 public class RecommendationService {
-    private final RecommendationStorage recommendationStorage;
+    private final FilmStorage filmStorage;
 
     public Collection<Film> getRecommendations(Long userId) {
-        return recommendationStorage.getRecommendations(userId);
+        return filmStorage.getRecommendations(userId);
     }
 
 }

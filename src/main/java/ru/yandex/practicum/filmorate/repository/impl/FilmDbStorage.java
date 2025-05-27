@@ -165,7 +165,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             ;
             """;
 
-    public static final String FIND_GENRES_ID_BY_FILM_ID_QUERY = """
+    private static final String FIND_GENRES_ID_BY_FILM_ID_QUERY = """
             SELECT g.id,
                    g.name
             FROM genres g
@@ -174,7 +174,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             WHERE fg.film_id = ?;
             """;
 
-    public static final String FIND_DIRECTORS_ID_BY_FILM_ID_QUERY = """
+    private static final String FIND_DIRECTORS_ID_BY_FILM_ID_QUERY = """
             SELECT d.id,
                    d.name
             FROM directors d
@@ -183,7 +183,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             WHERE fd.film_id = ?;
             """;
 
-    public static final String FIND_LIKES_BY_FILM_ID_QUERY = """
+    private static final String FIND_LIKES_BY_FILM_ID_QUERY = """
             SELECT user_id
             FROM film_likes
             WHERE film_id = ?;
@@ -286,6 +286,34 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
 
     private static final String SEARCH_BY_DIRECTOR = """
             UPPER(d.name) LIKE ?
+            """;
+
+    private static final String FIND_LIST_OF_USER_ID_FOR_RECOMMENDATION = """
+            SELECT f.*, mr.id mpa_id, mr.name mpa_name, mr.description mpa_description
+            FROM films f
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id
+            WHERE f.id IN (
+                SELECT film_id
+                FROM film_likes
+                WHERE user_id IN (
+                    SELECT u_cl.user_id
+                    FROM (
+                        (SELECT user_id, COUNT(*) common_likes
+                        FROM film_likes
+                        WHERE film_id IN (?)
+                        GROUP BY user_id) u_cl
+                    RIGHT JOIN (
+                        SELECT user_id, COUNT(*) all_likes
+                        FROM film_likes
+                        GROUP BY user_id) u_al ON u_al.user_id = u_cl.user_id)
+                    WHERE (all_likes - common_likes > 0))
+            AND f.id NOT IN (?));
+            """;
+
+    private static final String FIND_LIST_OF_FILM_ID_BY_USER_ID = """
+            SELECT film_id
+            FROM film_likes 
+            WHERE user_id = ?;
             """;
 
     private static final int COUNT_IS_ZERO = 0;
@@ -522,6 +550,33 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     public void deleteFilmById(Long filmId) {
         jdbc.update(DELETE_FILM_BY_ID, filmId);
         log.info("Deleted film with id: {}", filmId);
+    }
+
+    //--- Фильмы для рекомендации --------------------------------------------------------------------------------------
+    @Override
+    public Collection<Film> getRecommendations(Long userId) {
+
+        // Найти лайки пользователя
+        final List<Long> usersLikes = jdbc.queryForList(FIND_LIST_OF_FILM_ID_BY_USER_ID, Long.class, userId);
+        if (usersLikes.isEmpty()) {
+            return List.of();
+        }
+
+        List<FilmDto> recommendation = jdbc.query(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(FIND_LIST_OF_USER_ID_FOR_RECOMMENDATION);
+
+            stmt.setArray(1, connection.createArrayOf("BIGINT", usersLikes.toArray()));
+            stmt.setArray(2, connection.createArrayOf("BIGINT", usersLikes.toArray()));
+
+            return stmt;
+        }, new FilmRowMapper());
+
+        // загрузить жанры, лайки и режиссеров для найденных фильмов
+        recommendation.forEach(this::enrichFilmWithGenresAndLikes);
+
+        return recommendation.stream()
+                .map(FilmMapper::toFilm)
+                .toList();
     }
 
 
