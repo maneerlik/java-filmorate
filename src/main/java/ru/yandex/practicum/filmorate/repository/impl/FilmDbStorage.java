@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.enumeration.SearchParameter;
+import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.rowmapper.DirectorDtoRowMapper;
 import ru.yandex.practicum.filmorate.rowmapper.FilmRowMapper;
@@ -92,6 +93,26 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             ORDER BY likes_count DESC,
                      f.id DESC
             LIMIT ?;
+            """;
+
+    private static final String FIND_COMMON_FILMS_QUERY = """
+            SELECT f.*,
+                   mr.id mpa_id,
+                   mr.name mpa_name,
+                   mr.description mpa_description
+            FROM films f
+            JOIN (
+                SELECT f.id
+                FROM films f
+                JOIN film_likes fl ON f.id = fl.film_id
+                WHERE fl.user_id IN (?, ?)
+                GROUP BY f.id
+                HAVING COUNT(DISTINCT fl.user_id) = 2
+            ) cf ON f.id = cf.id
+            JOIN film_likes fl ON cf.id = fl.film_id
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id
+            GROUP BY f.id
+            ORDER BY COUNT(fl.user_id) DESC;
             """;
 
     private static final String FIND_GENRES_ID_BY_FILM_ID_QUERY = """
@@ -198,6 +219,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             LEFT JOIN directors d ON fd.director_id = d.id
             WHERE
             """;
+
     private static final String DELETE_FILM_BY_ID = """
             DELETE FROM films
             WHERE id = ?;
@@ -296,6 +318,19 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         popularFilms.forEach(this::enrichFilmWithGenresAndLikes);
 
         return popularFilms.stream()
+                .map(FilmMapper::toFilm)
+                .toList();
+    }
+
+    //--- Получение списка общих фильмов -------------------------------------------------------------------------------
+    @Override
+    public Collection<Film> getCommonFilms(Long userId, Long friendId) {
+        List<FilmDto> commonFilms = jdbc.query(FIND_COMMON_FILMS_QUERY, new FilmRowMapper(), userId, friendId);
+
+        // загрузить жанры, режиссеров и лайки для выбранных фильмов
+        commonFilms.forEach(this::enrichFilmWithGenresAndLikes);
+
+        return commonFilms.stream()
                 .map(FilmMapper::toFilm)
                 .toList();
     }
