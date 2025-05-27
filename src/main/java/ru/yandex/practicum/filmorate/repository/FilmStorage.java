@@ -28,4 +28,6 @@ public interface FilmStorage {
     Collection<Film> searchFilms(String query, List<String> searchParameters);
 
     void deleteFilmById(Long filmId);
+
+    Collection<Film> getRecommendations(Long userId);
 }
