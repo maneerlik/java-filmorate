@@ -56,6 +56,14 @@ public class FilmController {
         return filmService.getPopularFilms(count, genreId, year);
     }
 
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(
+            @RequestParam Long userId,
+            @RequestParam Long friendId
+    ) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
         Film filmUpdated = filmService.update(newFilm);
