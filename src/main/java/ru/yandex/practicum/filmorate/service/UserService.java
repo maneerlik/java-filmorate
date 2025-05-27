@@ -71,4 +71,8 @@ public class UserService {
         return userStorage.getFriends(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
+
+    public void deleteUserById(Long userId) {
+        userStorage.deleteUserById(userId);
+    }
 }
