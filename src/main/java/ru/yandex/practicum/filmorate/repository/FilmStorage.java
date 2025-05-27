@@ -17,6 +17,8 @@ public interface FilmStorage {
 
     Collection<Film> getPopularFilms(int count);
 
+    Collection<Film> getPopularFilmsByGenreAndYear(int count, Long genreId, int year);
+
     Film updateFilm(Film film);
 
     Optional<Boolean> removeLike(Long filmId, Long userId);

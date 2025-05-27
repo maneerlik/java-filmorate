@@ -94,6 +94,77 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             LIMIT ?;
             """;
 
+    private static final String FIND_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY = """
+            SELECT f.*,
+                   mr.id mpa_id,
+                   mr.name mpa_name,
+                   mr.description mpa_description,
+                   fl.likes_count
+            FROM films f
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS likes_count
+                FROM film_likes
+                GROUP BY film_id
+            ) fl ON f.id = fl.film_id
+            JOIN (
+                SELECT film_id
+                FROM film_genres
+                WHERE genre_id = ?
+            ) fg ON f.id = fg.film_id
+            WHERE YEAR(f.release_date) = ?
+            ORDER BY likes_count DESC,
+                     f.id DESC
+            """;
+
+    private static final String FIND_POPULAR_FILMS_BY_GENRE_QUERY = """
+            SELECT f.*,
+                   mr.id mpa_id,
+                   mr.name mpa_name,
+                   mr.description mpa_description,
+                   fl.likes_count
+            FROM films f
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS likes_count
+                FROM film_likes
+                GROUP BY film_id
+            ) fl ON f.id = fl.film_id
+            JOIN (
+                SELECT film_id
+                FROM film_genres
+                WHERE genre_id = ?
+            ) fg ON f.id = fg.film_id
+            ORDER BY likes_count DESC,
+                     f.id DESC
+            """;
+
+    private static final String FIND_POPULAR_FILMS_BY_YEAR_QUERY = """
+            SELECT f.*,
+                   mr.id mpa_id,
+                   mr.name mpa_name,
+                   mr.description mpa_description,
+                   fl.likes_count
+            FROM films f
+            JOIN mpa_ratings mr ON f.mpa_rating_id = mr.id
+            LEFT JOIN (
+                SELECT film_id, COUNT(*) AS likes_count
+                FROM film_likes
+                GROUP BY film_id
+            ) fl ON f.id = fl.film_id
+            WHERE YEAR(f.release_date) = ?
+            ORDER BY likes_count DESC,
+                     f.id DESC
+            """;
+
+    private static final String FIND_POPULAR_LIMIT = """
+            LIMIT ?;
+            """;
+
+    private static final String FIND_POPULAR_NOT_LIMIT = """
+            ;
+            """;
+
     private static final String FIND_GENRES_ID_BY_FILM_ID_QUERY = """
             SELECT g.id,
                    g.name
@@ -217,6 +288,11 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             UPPER(d.name) LIKE ?
             """;
 
+    private static final int COUNT_IS_ZERO = 0;
+    private static final int ID_GENRE_IS_ZERO = 0;
+    private static final int YEAR_IS_ZERO = 0;
+    private static final int YEAR_IS_1895 = 1895;
+
     public FilmDbStorage(final JdbcTemplate jdbc) {
         super(jdbc);
     }
@@ -262,7 +338,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     //--- Получение фильма по id ---------------------------------------------------------------------------------------
     @Override
     public Optional<Film> getFilm(Long id) {
-        checkEntityExists(id, EntityType.FILM);
+        checkFilmExists(id);
         FilmDto filmDto = jdbc.queryForObject(FIND_FILM_BY_ID_QUERY, new FilmRowMapper(), id);
 
         if (filmDto != null) {
@@ -291,6 +367,50 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     @Override
     public Collection<Film> getPopularFilms(int count) {
         List<FilmDto> popularFilms = jdbc.query(FIND_POPULAR_FILMS_QUERY, new FilmRowMapper(), count);
+
+        // загрузить жанры, режиссеров и лайки для выбранных фильмов
+        popularFilms.forEach(this::enrichFilmWithGenresAndLikes);
+
+        return popularFilms.stream()
+                .map(FilmMapper::toFilm)
+                .toList();
+    }
+
+    //--- Получение списка популярных фильмов по жанру и году ---------------------------------------------------------
+    @Override
+    public Collection<Film> getPopularFilmsByGenreAndYear(int count, Long genreId, int year) {
+        List<FilmDto> popularFilms = new ArrayList<>();
+        if (count != COUNT_IS_ZERO) {
+            if (genreId != ID_GENRE_IS_ZERO && year >= YEAR_IS_1895) {
+                checkGenresExist(genreId);
+                popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY + FIND_POPULAR_LIMIT,
+                        new FilmRowMapper(), genreId, year, count);
+            } else if (genreId != ID_GENRE_IS_ZERO && year == YEAR_IS_ZERO) {
+                checkGenresExist(genreId);
+                popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_QUERY + FIND_POPULAR_LIMIT,
+                        new FilmRowMapper(), genreId, count);
+            } else if (year >= YEAR_IS_1895) {
+                popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_YEAR_QUERY + FIND_POPULAR_LIMIT,
+                        new FilmRowMapper(), year, count);
+            } else {
+                throw new IllegalArgumentException("Release date film is incorrect");
+            }
+        } else {
+            if (genreId != ID_GENRE_IS_ZERO && year >= YEAR_IS_1895) {
+                checkGenresExist(genreId);
+                popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY + FIND_POPULAR_NOT_LIMIT,
+                        new FilmRowMapper(), genreId, year);
+            } else if (genreId != ID_GENRE_IS_ZERO && year == YEAR_IS_ZERO) {
+                checkGenresExist(genreId);
+                popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_GENRE_QUERY + FIND_POPULAR_NOT_LIMIT,
+                        new FilmRowMapper(), genreId);
+            } else if (year >= YEAR_IS_1895) {
+                popularFilms = jdbc.query(FIND_POPULAR_FILMS_BY_YEAR_QUERY + FIND_POPULAR_NOT_LIMIT,
+                        new FilmRowMapper(), year);
+            } else {
+                throw new IllegalArgumentException("Release date film is incorrect");
+            }
+        }
 
         // загрузить жанры, режиссеров и лайки для выбранных фильмов
         popularFilms.forEach(this::enrichFilmWithGenresAndLikes);

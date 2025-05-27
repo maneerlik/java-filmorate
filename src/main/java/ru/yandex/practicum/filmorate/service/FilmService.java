@@ -24,6 +24,11 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
+    private static final int COUNT_ZERO = 0;
+    private static final int ID_GENRE_ZERO = 0;
+    private static final int YEAR_ZERO = 0;
+    private static final int COUNT_DEFAULT = 10;
+
     @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
@@ -52,9 +57,15 @@ public class FilmService {
         return filmStorage.getAllFilms();
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        if (count <= 0) throw new IllegalArgumentException("Count must be positive");
-        return filmStorage.getPopularFilms(count);
+    public Collection<Film> getPopularFilms(int count, Long genreId, int year) {
+        if (genreId == ID_GENRE_ZERO && year == YEAR_ZERO) {
+            if (count == COUNT_ZERO) count = COUNT_DEFAULT;
+            if (count <= COUNT_ZERO) throw new IllegalArgumentException("Count must be positive");
+            return filmStorage.getPopularFilms(count);
+        } else {
+            if (count < COUNT_ZERO) throw new IllegalArgumentException("Count must be positive");
+            return filmStorage.getPopularFilmsByGenreAndYear(count, genreId, year);
+        }
     }
 
     public Film update(@Validated(UpdateValidationGroup.class) Film film) {
