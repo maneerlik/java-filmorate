@@ -295,7 +295,6 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
             WHERE id = ?;
             """;
 
-
     private static final String SORT_FOR_SEARCH_QUERY = """
             ORDER BY likes_count,
             f.id;
@@ -517,8 +516,10 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     }
 
     //--- Получение фильмов режиссера, отсортированных по годам или лайкам ---------------------------------------------
+    @Override
     public Collection<Film> getFilmsDirector(Long directorId, String sortBy) {
-        List<FilmDto> films = new ArrayList<>();
+        List<FilmDto> films;
+
         if (sortBy.equals("likes")) {
             films = jdbc.query(FIND_FILMS_DIRECTORS_FOR_LIKES, new FilmRowMapper(), directorId);
         } else if (sortBy.equals("year")) {
@@ -535,48 +536,17 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
                 .toList();
     }
 
+    //--- Поиск фильмов ------------------------------------------------------------------------------------------------
     @Override
     public Collection<Film> searchFilms(String query, List<String> searchParameters) {
-
         List<FilmDto> foundFilms = runQueryForSearchFilms(query.toUpperCase(), searchParameters);
+
         // загрузить жанры, лайки и режиссеров для найденных фильмов
         foundFilms.forEach(this::enrichFilmWithGenresAndLikes);
 
         return foundFilms.stream()
                 .map(FilmMapper::toFilm)
                 .toList();
-    }
-
-    private List<FilmDto> runQueryForSearchFilms(String query, List<String> searchParameters) {
-
-        final String SQLQuery;
-
-        if (searchParameters.contains(SearchParameter.DIRECTOR.name()) && searchParameters.contains(SearchParameter.TITLE.name())) {
-            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_TITLE + " OR " + SEARCH_BY_DIRECTOR + SORT_FOR_SEARCH_QUERY;
-            return jdbc.query(connection -> {
-                PreparedStatement stmt = connection.prepareStatement(SQLQuery);
-
-                stmt.setString(1, "%" + query + "%");
-                stmt.setString(2, "%" + query + "%");
-
-                return stmt;
-            }, new FilmRowMapper());
-        } else if (searchParameters.contains(SearchParameter.DIRECTOR.name())) {
-            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_DIRECTOR + SORT_FOR_SEARCH_QUERY;
-        } else if (searchParameters.contains(SearchParameter.TITLE.name())) {
-            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_TITLE + SORT_FOR_SEARCH_QUERY;
-        } else {
-            throw new SqlParameterException("Search condition is not defined");
-        }
-
-        return jdbc.query(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(SQLQuery);
-
-            stmt.setString(1, "%" + query + "%");
-
-            return stmt;
-        }, new FilmRowMapper());
-
     }
 
     //--- Удаление фильма по id ----------------------------------------------------------------------------------------
@@ -646,5 +616,35 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         filmDto.setGenres(loadGenresForFilm(filmId));
         filmDto.setDirectors(loadDirectorsForFilm(filmId));
         filmDto.setLikes(loadLikesForFilm(filmId));
+    }
+
+    private List<FilmDto> runQueryForSearchFilms(String query, List<String> searchParameters) {
+        final String SQLQuery;
+
+        if (searchParameters.contains(SearchParameter.DIRECTOR.name()) && searchParameters.contains(SearchParameter.TITLE.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_TITLE + " OR " + SEARCH_BY_DIRECTOR + SORT_FOR_SEARCH_QUERY;
+            return jdbc.query(connection -> {
+                PreparedStatement stmt = connection.prepareStatement(SQLQuery);
+
+                stmt.setString(1, "%" + query + "%");
+                stmt.setString(2, "%" + query + "%");
+
+                return stmt;
+            }, new FilmRowMapper());
+        } else if (searchParameters.contains(SearchParameter.DIRECTOR.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_DIRECTOR + SORT_FOR_SEARCH_QUERY;
+        } else if (searchParameters.contains(SearchParameter.TITLE.name())) {
+            SQLQuery = BASE_SEARCH_FILMS_BY_CONDITIONS + SEARCH_BY_TITLE + SORT_FOR_SEARCH_QUERY;
+        } else {
+            throw new SqlParameterException("Search condition is not defined");
+        }
+
+        return jdbc.query(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(SQLQuery);
+
+            stmt.setString(1, "%" + query + "%");
+
+            return stmt;
+        }, new FilmRowMapper());
     }
 }
