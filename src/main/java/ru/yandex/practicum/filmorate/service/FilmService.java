@@ -28,10 +28,10 @@ public class FilmService {
   private final UserStorage userStorage;
   private final FeedService feedService;
 
-    private static final int COUNT_ZERO = 0;
-    private static final int ID_GENRE_ZERO = 0;
-    private static final int YEAR_ZERO = 0;
-    private static final int COUNT_DEFAULT = 10;
+  private static final int COUNT_ZERO = 0;
+  private static final int ID_GENRE_ZERO = 0;
+  private static final int YEAR_ZERO = 0;
+  private static final int COUNT_DEFAULT = 10;
 
   @Autowired
   public FilmService(FilmStorage filmStorage, UserStorage userStorage, FeedService feedService) {
@@ -63,20 +63,26 @@ public class FilmService {
     return filmStorage.getAllFilms();
   }
 
-    public Collection<Film> getPopularFilms(int count, Long genreId, int year) {
-        if (genreId == ID_GENRE_ZERO && year == YEAR_ZERO) {
-            if (count == COUNT_ZERO) count = COUNT_DEFAULT;
-            if (count <= COUNT_ZERO) throw new IllegalArgumentException("Count must be positive");
-            return filmStorage.getPopularFilms(count);
-        } else {
-            if (count < COUNT_ZERO) throw new IllegalArgumentException("Count must be positive");
-            return filmStorage.getPopularFilmsByGenreAndYear(count, genreId, year);
-        }
+  public Collection<Film> getPopularFilms(int count, Long genreId, int year) {
+    if (genreId == ID_GENRE_ZERO && year == YEAR_ZERO) {
+      if (count == COUNT_ZERO) {
+        count = COUNT_DEFAULT;
+      }
+      if (count <= COUNT_ZERO) {
+        throw new IllegalArgumentException("Count must be positive");
+      }
+      return filmStorage.getPopularFilms(count);
+    } else {
+      if (count < COUNT_ZERO) {
+        throw new IllegalArgumentException("Count must be positive");
+      }
+      return filmStorage.getPopularFilmsByGenreAndYear(count, genreId, year);
     }
+  }
 
-    public Collection<Film> getCommonFilms(Long userId, Long friendId) {
-        return filmStorage.getCommonFilms(userId, friendId);
-    }
+  public Collection<Film> getCommonFilms(Long userId, Long friendId) {
+    return filmStorage.getCommonFilms(userId, friendId);
+  }
 
   public Film update(@Validated(UpdateValidationGroup.class) Film film) {
     Film updatedFilm = filmStorage.updateFilm(film);
@@ -93,12 +99,12 @@ public class FilmService {
   }
 
   private void validateFilmAndUserExist(Long filmId, Long userId) {
-      if (filmStorage.getFilm(filmId).isEmpty()) {
-          throw new NotFoundException("Film not found");
-      }
-      if (userStorage.getUser(userId).isEmpty()) {
-          throw new NotFoundException("User not found");
-      }
+    if (filmStorage.getFilm(filmId).isEmpty()) {
+      throw new NotFoundException("Film not found");
+    }
+    if (userStorage.getUser(userId).isEmpty()) {
+      throw new NotFoundException("User not found");
+    }
   }
 
   public Collection<Film> getFilmsDirector(Long id, String sortBy) {

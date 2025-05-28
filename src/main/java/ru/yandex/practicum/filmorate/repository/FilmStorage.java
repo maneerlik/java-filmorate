@@ -7,29 +7,30 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
-    Film createFilm(Film film);
 
-    Optional<Boolean> addLike(Long filmId, Long userId);
+  Film createFilm(Film film);
 
-    Optional<Film> getFilm(Long id);
+  Optional<Boolean> addLike(Long filmId, Long userId);
 
-    Collection<Film> getAllFilms();
+  Optional<Film> getFilm(Long id);
 
-    Collection<Film> getPopularFilms(int count);
+  Collection<Film> getAllFilms();
 
-    Collection<Film> getCommonFilms(Long userId1, Long userId2);
+  Collection<Film> getPopularFilms(int count);
 
-    Collection<Film> getPopularFilmsByGenreAndYear(int count, Long genreId, int year);
+  Collection<Film> getCommonFilms(Long userId1, Long userId2);
 
-    Film updateFilm(Film film);
+  Collection<Film> getPopularFilmsByGenreAndYear(int count, Long genreId, int year);
 
-    Optional<Boolean> removeLike(Long filmId, Long userId);
+  Film updateFilm(Film film);
 
-    Collection<Film> getFilmsDirector(Long filmId, String sortBy);
+  Optional<Boolean> removeLike(Long filmId, Long userId);
 
-    Collection<Film> searchFilms(String query, List<String> searchParameters);
+  Collection<Film> getFilmsDirector(Long filmId, String sortBy);
 
-    void deleteFilmById(Long filmId);
+  Collection<Film> searchFilms(String query, List<String> searchParameters);
 
-    Collection<Film> getRecommendations(Long userId);
+  void deleteFilmById(Long filmId);
+
+  Collection<Film> getRecommendations(Long userId);
 }

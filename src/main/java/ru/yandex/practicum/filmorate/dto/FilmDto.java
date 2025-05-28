@@ -13,13 +13,14 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FilmDto {
-    private Long id;
-    private String name;
-    private String description;
-    private LocalDate releaseDate;
-    private Long duration;
-    private MpaRatingDto mpa;
-    private Set<GenreDto> genres;
-    private Set<DirectorDto> directors;
-    private Set<Long> likes;
+
+  private Long id;
+  private String name;
+  private String description;
+  private LocalDate releaseDate;
+  private Long duration;
+  private MpaRatingDto mpa;
+  private Set<GenreDto> genres;
+  private Set<DirectorDto> directors;
+  private Set<Long> likes;
 }

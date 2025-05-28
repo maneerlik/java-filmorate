@@ -17,40 +17,43 @@ import java.util.Optional;
 @Slf4j
 @Validated
 public class DirectorService {
-    private final DirectorStorage directorStorage;
 
-    @Autowired
-    public DirectorService(DirectorStorage directorStorage) {
-        this.directorStorage = directorStorage;
-    }
+  private final DirectorStorage directorStorage;
+
+  @Autowired
+  public DirectorService(DirectorStorage directorStorage) {
+    this.directorStorage = directorStorage;
+  }
 
 
-    public Director createDirector(@Valid @RequestBody Director director) {
-        Director createDirector = directorStorage.createDirector(director);
-        log.info("Director created: {}", createDirector);
-        return createDirector;
-    }
+  public Director createDirector(@Valid @RequestBody Director director) {
+    Director createDirector = directorStorage.createDirector(director);
+    log.info("Director created: {}", createDirector);
+    return createDirector;
+  }
 
-    public Director getDirector(Long idDirector) {
-        return directorStorage.getDirector(idDirector)
-                .orElseThrow(() -> new NotFoundException("Director not found"));
-    }
+  public Director getDirector(Long idDirector) {
+    return directorStorage.getDirector(idDirector)
+        .orElseThrow(() -> new NotFoundException("Director not found"));
+  }
 
-    public Collection<Director> getAllDirectors() {
-        return directorStorage.getAllDirectors();
-    }
+  public Collection<Director> getAllDirectors() {
+    return directorStorage.getAllDirectors();
+  }
 
-    public Director updateDirector(@Valid @RequestBody Director director) {
-        Optional<Director> updatedDirector = directorStorage.updateDirector(director);
-        if (updatedDirector.isEmpty())
-            throw new NotFoundException(String.format("Director with id=%s not found", director.getId()));
-        log.info("Director updated: {}", updatedDirector);
-        return updatedDirector.get();
-    }
+  public Director updateDirector(@Valid @RequestBody Director director) {
+    Optional<Director> updatedDirector = directorStorage.updateDirector(director);
+      if (updatedDirector.isEmpty()) {
+          throw new NotFoundException(
+              String.format("Director with id=%s not found", director.getId()));
+      }
+    log.info("Director updated: {}", updatedDirector);
+    return updatedDirector.get();
+  }
 
-    public void removeDirector(Long idDirector) {
-        directorStorage.removeDirector(idDirector)
-                .orElseThrow(() -> new NotFoundException("Director not found"));
-        log.info("Removed director with id = {}", idDirector);
-    }
+  public void removeDirector(Long idDirector) {
+    directorStorage.removeDirector(idDirector)
+        .orElseThrow(() -> new NotFoundException("Director not found"));
+    log.info("Removed director with id = {}", idDirector);
+  }
 }

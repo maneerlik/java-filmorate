@@ -12,19 +12,19 @@ import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 @AllArgsConstructor
 public class Review {
 
-    @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
-    private Long reviewId;
+  @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
+  private Long reviewId;
 
-    private String content;
+  private String content;
 
-    @NotNull(message = "Sign isPositive cannot be empty", groups = Default.class)
-    private Boolean isPositive;
+  @NotNull(message = "Sign isPositive cannot be empty", groups = Default.class)
+  private Boolean isPositive;
 
-    @NotNull(message = "userId cannot be empty", groups = Default.class)
-    private Long userId;
+  @NotNull(message = "userId cannot be empty", groups = Default.class)
+  private Long userId;
 
-    @NotNull(message = "filmId cannot be empty", groups = Default.class)
-    private Long filmId;
+  @NotNull(message = "filmId cannot be empty", groups = Default.class)
+  private Long filmId;
 
-    private Integer useful;
+  private Integer useful;
 }

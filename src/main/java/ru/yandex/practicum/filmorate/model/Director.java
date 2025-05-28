@@ -10,8 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Director {
-    private Long id;
 
-    @NotBlank(message = "Name cannot be empty", groups = Default.class)
-    private String name;
+  private Long id;
+
+  @NotBlank(message = "Name cannot be empty", groups = Default.class)
+  private String name;
 }
