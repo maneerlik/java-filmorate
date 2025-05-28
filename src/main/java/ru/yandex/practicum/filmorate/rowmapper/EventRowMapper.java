@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.enumeration.EventOperation;
 import ru.yandex.practicum.filmorate.model.enumeration.EventType;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
