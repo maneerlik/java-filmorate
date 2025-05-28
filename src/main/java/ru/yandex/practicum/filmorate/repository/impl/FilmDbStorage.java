@@ -137,9 +137,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
           FROM film_genres
           WHERE genre_id = ?
       ) fg ON f.id = fg.film_id
-      WHERE YEAR(f.release_date) = ?
-      ORDER BY likes_count DESC,
-               f.id DESC
+      WHERE YEAR(f.release_date) = ?;
       """;
 
   private static final String FIND_POPULAR_FILMS_BY_GENRE_QUERY = """
@@ -159,9 +157,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
           SELECT film_id
           FROM film_genres
           WHERE genre_id = ?
-      ) fg ON f.id = fg.film_id
-      ORDER BY likes_count DESC,
-               f.id DESC
+      ) fg ON f.id = fg.film_id;
       """;
 
   private static final String FIND_POPULAR_FILMS_BY_YEAR_QUERY = """
@@ -177,9 +173,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
           FROM film_likes
           GROUP BY film_id
       ) fl ON f.id = fl.film_id
-      WHERE YEAR(f.release_date) = ?
-      ORDER BY likes_count DESC,
-               f.id DESC
+      WHERE YEAR(f.release_date) = ?;
       """;
 
   private static final String FIND_POPULAR_LIMIT = """
@@ -301,7 +295,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
       """;
 
   private static final String SORT_FOR_SEARCH_QUERY = """
-      ORDER BY likes_count,
+      ORDER BY likes_count DESC,
       f.id;
       """;
 
@@ -325,14 +319,20 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
               FROM (
                   (SELECT user_id, COUNT(*) common_likes
                   FROM film_likes
-                  WHERE film_id IN (?)
+                  WHERE film_id IN (
+                      SELECT film_id
+                      FROM film_likes
+                      WHERE user_id = ?)
                   GROUP BY user_id) u_cl
               RIGHT JOIN (
                   SELECT user_id, COUNT(*) all_likes
                   FROM film_likes
                   GROUP BY user_id) u_al ON u_al.user_id = u_cl.user_id)
               WHERE (all_likes - common_likes > 0))
-      AND f.id NOT IN (?));
+      AND f.id NOT IN (
+          SELECT film_id
+          FROM film_likes
+          WHERE user_id = ?));
       """;
 
   private static final String FIND_LIST_OF_FILM_ID_BY_USER_ID = """
@@ -373,10 +373,13 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     Long filmId = keyHolder.getKeyAs(Long.class);
     film.setId(filmId);
 
-    // Сохранение жанров фильма
-    saveFilmGenres(filmId, film.getGenres());
-    // Сохранение режиссеров
-    saveFilmDirectors(filmId, film.getDirectors());
+      // обновить жанры фильма
+      jdbc.update(DELETE_FILM_GENRES_BY_ID, film.getId());
+      film.setGenres(saveFilmGenres(film.getId(), film.getGenres()));
+
+      // обновить режиссеров фильма
+      jdbc.update(DELETE_FILM_DIRECTORS_BY_ID, film.getId());
+      film.setDirectors(saveFilmDirectors(film.getId(), film.getDirectors()));
 
     log.info("Created new film with id: {}", filmId);
     return film;
@@ -385,6 +388,7 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
   //--- Добавление лайка ---------------------------------------------------------------------------------------------
   @Override
   public Optional<Boolean> addLike(Long filmId, Long userId) {
+    removeLike(filmId, userId);
     int rowsAffected = jdbc.update(INSERT_LIKE_QUERY, filmId, userId);
     return Optional.of(rowsAffected > 0);
   }
@@ -504,13 +508,13 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
         film.getId()
     );
 
-    // обновить жанры фильма
-    jdbc.update(DELETE_FILM_GENRES_BY_ID, film.getId());
-    saveFilmGenres(film.getId(), film.getGenres());
+      // обновить жанры фильма
+      jdbc.update(DELETE_FILM_GENRES_BY_ID, film.getId());
+      film.setGenres(saveFilmGenres(film.getId(), film.getGenres()));
 
-    // обновить режиссеров фильма
-    jdbc.update(DELETE_FILM_DIRECTORS_BY_ID, film.getId());
-    saveFilmDirectors(film.getId(), film.getDirectors());
+      // обновить режиссеров фильма
+      jdbc.update(DELETE_FILM_DIRECTORS_BY_ID, film.getId());
+      film.setDirectors(saveFilmDirectors(film.getId(), film.getDirectors()));
 
     log.info("Updated film with id: {}", film.getId());
     return film;
@@ -526,6 +530,8 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
   //--- Получение фильмов режиссера, отсортированных по годам или лайкам ---------------------------------------------
   @Override
   public Collection<Film> getFilmsDirector(Long directorId, String sortBy) {
+    checkDirectorExists(directorId);
+
     List<FilmDto> films;
 
     if (sortBy.equals("likes")) {
@@ -578,8 +584,8 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
     List<FilmDto> recommendation = jdbc.query(connection -> {
       PreparedStatement stmt = connection.prepareStatement(FIND_LIST_OF_USER_ID_FOR_RECOMMENDATION);
 
-      stmt.setArray(1, connection.createArrayOf("BIGINT", usersLikes.toArray()));
-      stmt.setArray(2, connection.createArrayOf("BIGINT", usersLikes.toArray()));
+      stmt.setLong(1, userId);
+      stmt.setLong(2, userId);
 
       return stmt;
     }, new FilmRowMapper());
@@ -594,20 +600,39 @@ public class FilmDbStorage extends BaseDbStorage implements FilmStorage {
 
 
   //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-  private void saveFilmGenres(Long filmId, Set<Genre> genres) {
-    if (genres != null && !genres.isEmpty()) {
-      genres.forEach(this::checkGenreExists);
-      genres.forEach(genre -> jdbc.update(INSERT_FILM_GENRE_QUERY, filmId, genre.getId()));
-    }
+  private List<Genre> saveFilmGenres(Long filmId, List<Genre> genres) {
+      if (genres != null && !genres.isEmpty()) {
+          genres.forEach(this::checkGenreExists);
+          if (genres.size() != new HashSet<>(genres).size()) {
+              List<Genre> genresNew = new ArrayList<>();
+              for (Genre genre: genres) {
+                  if (!genresNew.contains(genre)) {
+                      genresNew.add(genre);
+                  }
+              }
+              genres = genresNew;
+          }
+          genres.forEach(genre -> jdbc.update(INSERT_FILM_GENRE_QUERY, filmId, genre.getId()));
+      }
+      return genres;
   }
 
-  private void saveFilmDirectors(Long filmId, Set<Director> directors) {
-    if (directors != null && !directors.isEmpty()) {
-      directors.forEach(this::checkDirectorExists);
-      directors.forEach(
-          director -> jdbc.update(INSERT_FILM_DIRECTOR_QUERY, filmId, director.getId()));
+    private List<Director> saveFilmDirectors(Long filmId, List<Director> directors) {
+        if (directors != null && !directors.isEmpty()) {
+            directors.forEach(this::checkDirectorExists);
+            if (directors.size() != new HashSet<>(directors).size()) {
+                List<Director> directorsNew = new ArrayList<>();
+                for (Director director: directors) {
+                    if (!directorsNew.contains(director)) {
+                        directorsNew.add(director);
+                    }
+                }
+                directors = directorsNew;
+            }
+            directors.forEach(director -> jdbc.update(INSERT_FILM_DIRECTOR_QUERY, filmId, director.getId()));
+        }
+        return directors;
     }
-  }
 
   private Set<GenreDto> loadGenresForFilm(Long filmId) {
     return new HashSet<>(

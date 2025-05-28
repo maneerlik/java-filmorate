@@ -12,7 +12,9 @@ import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 import ru.yandex.practicum.filmorate.validation.film.ReleaseDate;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -66,9 +68,9 @@ public class Film {
   @NotNull(message = "MPAA rating cannot be empty", groups = Default.class)
   private MpaRating mpa;
 
-  private Set<Genre> genres = new HashSet<>();
+  private List<Genre> genres = new ArrayList<>();
 
-  private Set<Director> directors = new HashSet<>();
+  private List<Director> directors = new ArrayList<>();
 
   private Set<Long> likes = new HashSet<>();
 }

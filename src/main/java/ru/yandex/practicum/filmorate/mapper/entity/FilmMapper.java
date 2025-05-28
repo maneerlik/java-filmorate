@@ -3,8 +3,6 @@ package ru.yandex.practicum.filmorate.mapper.entity;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.stream.Collectors;
-
 public class FilmMapper {
 
   public static Film toFilm(FilmDto filmDto) {
@@ -18,10 +16,10 @@ public class FilmMapper {
     film.setMpa(MpaRatingMapper.toMpaRating(filmDto.getMpa()));
     film.setGenres(filmDto.getGenres().stream()
         .map(GenreMapper::toGenre)
-        .collect(Collectors.toSet()));
+        .toList());
     film.setDirectors(filmDto.getDirectors().stream()
         .map(DirectorMapper::toDirector)
-        .collect(Collectors.toSet()));
+        .toList());
     film.setLikes(filmDto.getLikes());
 
     return film;

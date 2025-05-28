@@ -105,6 +105,8 @@ public class DirectorDbStorage extends BaseDbStorage implements DirectorStorage 
   //--- Обновить режиссера -------------------------------------------------------------------------------------------
   @Override
   public Optional<Director> updateDirector(Director director) {
+     checkDirectorExists(director);
+
     Objects.requireNonNull(director.getId(), "Director id cannot be null");
 
     int rowsAffected = jdbc.update(

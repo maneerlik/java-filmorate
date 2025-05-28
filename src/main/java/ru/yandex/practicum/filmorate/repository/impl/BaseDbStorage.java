@@ -91,6 +91,10 @@ public class BaseDbStorage {
     checkEntityExists(director.getId(), EntityType.DIRECTOR);
   }
 
+  protected void checkDirectorExists(Long directorId) {
+    checkEntityExists(directorId, EntityType.DIRECTOR);
+  }
+
   protected void checkReviewExists(Review review) {
     checkEntityExists(review.getReviewId(), EntityType.REVIEW);
   }
