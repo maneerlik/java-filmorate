@@ -10,14 +10,14 @@ import java.sql.SQLException;
 @Component
 public class MpaRatingRowMapper implements RowMapper<MpaRating> {
 
-    @Override
-    public MpaRating mapRow(ResultSet rs, int rowNum) throws SQLException {
-        MpaRating mpaRating = new MpaRating();
+  @Override
+  public MpaRating mapRow(ResultSet rs, int rowNum) throws SQLException {
+    MpaRating mpaRating = new MpaRating();
 
-        mpaRating.setId(rs.getLong("id"));
-        mpaRating.setName(rs.getString("name"));
-        mpaRating.setDescription(rs.getString("description"));
+    mpaRating.setId(rs.getLong("id"));
+    mpaRating.setName(rs.getString("name"));
+    mpaRating.setDescription(rs.getString("description"));
 
-        return mpaRating;
-    }
+    return mpaRating;
+  }
 }

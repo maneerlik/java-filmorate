@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.model.enumeration;
 
-public enum SearchParameter {
-  DIRECTOR, TITLE;
+public enum EventOperation {
+  ADD,
+  REMOVE,
+  UPDATE
 }

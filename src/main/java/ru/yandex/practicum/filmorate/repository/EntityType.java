@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.repository;
 
 public enum EntityType {
-    USER,
-    FILM,
-    MPA_RATING,
-    GENRE,
-    DIRECTOR,
-    REVIEW
+  USER,
+  FILM,
+  MPA_RATING,
+  GENRE,
+  DIRECTOR,
+  REVIEW
 }

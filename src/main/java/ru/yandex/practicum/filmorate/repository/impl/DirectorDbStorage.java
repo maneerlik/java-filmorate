@@ -22,108 +22,112 @@ import java.util.Optional;
 @Repository
 @Slf4j
 public class DirectorDbStorage extends BaseDbStorage implements DirectorStorage {
-    public static final String INSERT_DIRECTOR_QUERY = """
-            INSERT INTO directors (name) VALUES (?);
-            """;
 
-    public static final String FIND_ALL_DIRECTORS_QUERY = """
-            SELECT * FROM directors;
-            """;
+  public static final String INSERT_DIRECTOR_QUERY = """
+      INSERT INTO directors (name) VALUES (?);
+      """;
 
-    public static final String FIND_DIRECTOR_BY_ID = """
-            SELECT *
-            FROM directors
-            WHERE id = ?;
-            """;
+  public static final String FIND_ALL_DIRECTORS_QUERY = """
+      SELECT * FROM directors;
+      """;
 
-    public static final String UPDATE_DIRECTOR_QUERY = """
-            UPDATE directors
-            SET name = ?
-            WHERE id = ?;
-            """;
+  public static final String FIND_DIRECTOR_BY_ID = """
+      SELECT *
+      FROM directors
+      WHERE id = ?;
+      """;
 
-    private static final String DELETE_DIRECTOR_QUERY = """
-            DELETE FROM directors
-            WHERE id = ?;
-            """;
+  public static final String UPDATE_DIRECTOR_QUERY = """
+      UPDATE directors
+      SET name = ?
+      WHERE id = ?;
+      """;
+
+  private static final String DELETE_DIRECTOR_QUERY = """
+      DELETE FROM directors
+      WHERE id = ?;
+      """;
 
 
-    public DirectorDbStorage(JdbcTemplate jdbc) {
-        super(jdbc);
+  public DirectorDbStorage(JdbcTemplate jdbc) {
+    super(jdbc);
+  }
+
+  //--- Создать режиссера --------------------------------------------------------------------------------------------
+  @Override
+  public Director createDirector(Director director) {
+    KeyHolder keyHolder = new GeneratedKeyHolder();
+
+    jdbc.update(connection -> {
+      PreparedStatement stmt = connection.prepareStatement(INSERT_DIRECTOR_QUERY,
+          Statement.RETURN_GENERATED_KEYS);
+
+      stmt.setString(1, director.getName());
+
+      return stmt;
+    }, keyHolder);
+
+    Long directorId = keyHolder.getKeyAs(Long.class);
+    director.setId(directorId);
+    log.info("Successfully created director with id: {}", directorId);
+
+    return director;
+  }
+
+  //--- Получить режиссера по id -------------------------------------------------------------------------------------
+  @Override
+  public Optional<Director> getDirector(Long id) {
+    Objects.requireNonNull(id, "Director id cannot be null");
+    checkEntityExists(id, EntityType.DIRECTOR);
+
+    DirectorDto directorDto = jdbc.queryForObject(FIND_DIRECTOR_BY_ID, new DirectorDtoRowMapper(),
+        id);
+
+    if (directorDto != null) {
+      return Optional.of(DirectorMapper.toDirector(directorDto));
     }
 
-    //--- Создать режиссера --------------------------------------------------------------------------------------------
-    @Override
-    public Director createDirector(Director director) {
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+    log.warn("Director with id {} not found", id);
+    return Optional.empty();
+  }
 
-        jdbc.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(INSERT_DIRECTOR_QUERY, Statement.RETURN_GENERATED_KEYS);
+  //--- Получить список всех режиссеров ------------------------------------------------------------------------------
+  @Override
+  public Collection<Director> getAllDirectors() {
+    List<DirectorDto> allDirector = jdbc.query(FIND_ALL_DIRECTORS_QUERY,
+        new DirectorDtoRowMapper());
 
-            stmt.setString(1, director.getName());
+    return allDirector.stream()
+        .map(DirectorMapper::toDirector)
+        .toList();
+  }
 
-            return stmt;
-        }, keyHolder);
+  //--- Обновить режиссера -------------------------------------------------------------------------------------------
+  @Override
+  public Optional<Director> updateDirector(Director director) {
+    Objects.requireNonNull(director.getId(), "Director id cannot be null");
 
-        Long directorId = keyHolder.getKeyAs(Long.class);
-        director.setId(directorId);
-        log.info("Successfully created director with id: {}", directorId);
+    int rowsAffected = jdbc.update(
+        UPDATE_DIRECTOR_QUERY,
+        director.getName(),
+        director.getId()
+    );
 
-        return director;
+    if (rowsAffected > 0) {
+      log.info("Successfully updated director with id: {}", director.getId());
+      return Optional.of(director);
     }
 
-    //--- Получить режиссера по id -------------------------------------------------------------------------------------
-    @Override
-    public Optional<Director> getDirector(Long id) {
-        Objects.requireNonNull(id, "Director id cannot be null");
-        checkEntityExists(id, EntityType.DIRECTOR);
+    log.warn("No director found with id: {} for update", director.getId());
+    return Optional.empty();
+  }
 
-        DirectorDto directorDto = jdbc.queryForObject(FIND_DIRECTOR_BY_ID, new DirectorDtoRowMapper(), id);
+  //--- Удалить режиссера --------------------------------------------------------------------------------------------
+  @Override
+  public Optional<Boolean> removeDirector(Long id) {
+    checkEntityExists(id, EntityType.DIRECTOR);
 
-        if (directorDto != null) {
-            return Optional.of(DirectorMapper.toDirector(directorDto));
-        }
-
-        log.warn("Director with id {} not found", id);
-        return Optional.empty();
-    }
-
-    //--- Получить список всех режиссеров ------------------------------------------------------------------------------
-    @Override
-    public Collection<Director> getAllDirectors() {
-        List<DirectorDto> allDirector = jdbc.query(FIND_ALL_DIRECTORS_QUERY, new DirectorDtoRowMapper());
-
-        return allDirector.stream()
-                .map(DirectorMapper::toDirector)
-                .toList();
-    }
-
-    //--- Обновить режиссера -------------------------------------------------------------------------------------------
-    @Override
-    public Optional<Director> updateDirector(Director director) {
-        Objects.requireNonNull(director.getId(), "Director id cannot be null");
-
-        int rowsAffected = jdbc.update(
-                UPDATE_DIRECTOR_QUERY,
-                director.getName(),
-                director.getId()
-        );
-
-        if (rowsAffected > 0) {
-            log.info("Successfully updated director with id: {}", director.getId());
-            return Optional.of(director);
-        }
-
-        log.warn("No director found with id: {} for update", director.getId());
-        return Optional.empty();
-    }
-
-    //--- Удалить режиссера --------------------------------------------------------------------------------------------
-    @Override
-    public Optional<Boolean> removeDirector(Long id) {
-        checkEntityExists(id, EntityType.DIRECTOR);
-
-        int rowsAffected = jdbc.update(DELETE_DIRECTOR_QUERY, id);
-        return Optional.of(rowsAffected > 0);
-    }
+    int rowsAffected = jdbc.update(DELETE_DIRECTOR_QUERY, id);
+    return Optional.of(rowsAffected > 0);
+  }
 }

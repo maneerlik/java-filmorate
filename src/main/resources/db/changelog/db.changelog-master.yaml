@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changes/003-create-tables-director.sql
   - include:
       file: db/changelog/changes/004-create-reviews-and-votes.sql
+  - include:
+      file: db/changelog/changes/005-create-feed.sql
