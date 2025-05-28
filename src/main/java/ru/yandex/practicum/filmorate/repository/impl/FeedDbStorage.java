@@ -17,13 +17,14 @@ public class FeedDbStorage extends BaseDbStorage implements FeedStorage {
 
   protected final EventRowMapper mapper;
 
-  private static final String GET_FEED = """ 
+  private static final String GET_FEED = """
       SELECT * FROM eventy
-      WHERE user_id = ?
+      WHERE user_id = ?;
       """;
+
   private static final String ADD_FEED = """
       INSERT INTO eventy (timestamp, user_id, event_type, operation, entity_id)
-      VALUES (?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?);
       """;
 
   public FeedDbStorage(JdbcTemplate jdbc, EventRowMapper mapper) {
