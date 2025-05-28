@@ -15,91 +15,92 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/films")
 public class FilmController {
-    private final FilmService filmService;
 
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
+  private final FilmService filmService;
 
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Film create(@RequestBody Film film) {
-        return filmService.create(film);
-    }
-
-    @PutMapping("/{id}/like/{userId}")
-    public void addLike(
-            @PathVariable Long id,
-            @PathVariable Long userId
-    ) {
-        filmService.addLike(id, userId);
-    }
-
-    @GetMapping("/{id}")
-    public Film getById(@PathVariable Long id) {
-        return filmService.getFilm(id)
-                .orElseThrow(() -> new NotFoundException("Film not found"));
-    }
-
-    @GetMapping
-    public Collection<Film> findAll() {
-        return filmService.findAll();
-    }
-
-    @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(
-            @RequestParam(defaultValue = "0") Integer count,
-            @RequestParam(defaultValue = "0") Long genreId,
-            @RequestParam(defaultValue = "0") Integer year
-    ) {
-        return filmService.getPopularFilms(count, genreId, year);
-    }
-
-    @GetMapping("/common")
-    public Collection<Film> getCommonFilms(
-            @RequestParam Long userId,
-            @RequestParam Long friendId
-    ) {
-        return filmService.getCommonFilms(userId, friendId);
-    }
-
-    @PutMapping
-    public Film update(@RequestBody Film newFilm) {
-        Film filmUpdated = filmService.update(newFilm);
-        log.info("Film updated: {}", filmUpdated);
-        return filmUpdated;
-    }
-
-    @GetMapping("/director/{id}")
-    public Collection<Film> getFilmsDirector(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "year") String sortBy
-    ) {
-        return filmService.getFilmsDirector(id, sortBy);
-    }
+  public FilmController(FilmService filmService) {
+    this.filmService = filmService;
+  }
 
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(
-            @PathVariable Long id,
-            @PathVariable Long userId
-    ) {
-        filmService.removeLike(id, userId);
-    }
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public Film create(@RequestBody Film film) {
+    return filmService.create(film);
+  }
 
-    @GetMapping("/search")
-    @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> searchFilms(
-            @RequestParam String query,
-            @RequestParam List<String> by
-    ) {
-        return filmService.searchFilms(query, by);
-    }
+  @PutMapping("/{id}/like/{userId}")
+  public void addLike(
+      @PathVariable Long id,
+      @PathVariable Long userId
+  ) {
+    filmService.addLike(id, userId);
+  }
 
-    @DeleteMapping("/{filmId}")
-    public ResponseEntity<Void> deleteFilmById(@PathVariable Long filmId) {
-        filmService.deleteFilmById(filmId);
-        return ResponseEntity.ok().build();
-    }
+  @GetMapping("/{id}")
+  public Film getById(@PathVariable Long id) {
+    return filmService.getFilm(id)
+        .orElseThrow(() -> new NotFoundException("Film not found"));
+  }
+
+  @GetMapping
+  public Collection<Film> findAll() {
+    return filmService.findAll();
+  }
+
+  @GetMapping("/popular")
+  public Collection<Film> getPopularFilms(
+      @RequestParam(defaultValue = "0") Integer count,
+      @RequestParam(defaultValue = "0") Long genreId,
+      @RequestParam(defaultValue = "0") Integer year
+  ) {
+    return filmService.getPopularFilms(count, genreId, year);
+  }
+
+  @GetMapping("/common")
+  public Collection<Film> getCommonFilms(
+      @RequestParam Long userId,
+      @RequestParam Long friendId
+  ) {
+    return filmService.getCommonFilms(userId, friendId);
+  }
+
+  @PutMapping
+  public Film update(@RequestBody Film newFilm) {
+    Film filmUpdated = filmService.update(newFilm);
+    log.info("Film updated: {}", filmUpdated);
+    return filmUpdated;
+  }
+
+  @GetMapping("/director/{id}")
+  public Collection<Film> getFilmsDirector(
+      @PathVariable Long id,
+      @RequestParam(defaultValue = "year") String sortBy
+  ) {
+    return filmService.getFilmsDirector(id, sortBy);
+  }
+
+
+  @DeleteMapping("/{id}/like/{userId}")
+  public void removeLike(
+      @PathVariable Long id,
+      @PathVariable Long userId
+  ) {
+    filmService.removeLike(id, userId);
+  }
+
+  @GetMapping("/search")
+  @ResponseStatus(HttpStatus.OK)
+  public Collection<Film> searchFilms(
+      @RequestParam String query,
+      @RequestParam List<String> by
+  ) {
+    return filmService.searchFilms(query, by);
+  }
+
+  @DeleteMapping("/{filmId}")
+  public ResponseEntity<Void> deleteFilmById(@PathVariable Long filmId) {
+    filmService.deleteFilmById(filmId);
+    return ResponseEntity.ok().build();
+  }
 }
