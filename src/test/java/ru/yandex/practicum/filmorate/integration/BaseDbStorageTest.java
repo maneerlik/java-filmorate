@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.repository.impl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.repository.impl.UserDbStorage;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 import static ru.yandex.practicum.filmorate.util.TestDataGenerator.*;
@@ -42,8 +43,8 @@ public abstract class BaseDbStorageTest {
     protected LocalDate releaseDate;
     protected Long duration;
     protected MpaRating mpa;
-    protected Set<Genre> genres;
-    protected Set<Director> directors;
+    protected List<Genre> genres;
+    protected List<Director> directors;
     protected Set<Long> likes;
 
 

@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Repository
@@ -35,6 +36,10 @@ public class ReviewDbStorage extends BaseDbStorage implements ReviewStorage {
 
   public static final String SELECT_REVIEWS_BY_FILM_ID = """
       SELECT * FROM reviews WHERE film_id = ? ORDER BY rating DESC LIMIT ?;
+      """;
+
+  public static final String SELECT_REVIEWS_WITHOUT_FILM_ID = """
+      SELECT * FROM reviews ORDER BY rating DESC LIMIT ?;
       """;
 
   public static final String SELECT_RATING_OF_REVIEW = """
@@ -125,9 +130,15 @@ public class ReviewDbStorage extends BaseDbStorage implements ReviewStorage {
   //--- Получение списка отзывов по id фильма ------------------------------------------------------------------------
   @Override
   public Collection<Review> getReviewsByFilmId(Long filmId, int count) {
-    List<ReviewDto> reviews = jdbc.query(SELECT_REVIEWS_BY_FILM_ID, new ReviewRowMapper(), filmId,
-        count);
-    return reviews.stream().map(ReviewMapper::toReview).toList();
+      List<ReviewDto> reviews;
+
+      if (Objects.isNull(filmId)) {
+          reviews = jdbc.query(SELECT_REVIEWS_WITHOUT_FILM_ID, new ReviewRowMapper(), count);
+      } else {
+          reviews = jdbc.query(SELECT_REVIEWS_BY_FILM_ID, new ReviewRowMapper(), filmId, count);
+      }
+
+      return reviews.stream().map(ReviewMapper::toReview).toList();
   }
 
   //--- Обновление отзыва --------------------------------------------------------------------------------------------
@@ -146,7 +157,9 @@ public class ReviewDbStorage extends BaseDbStorage implements ReviewStorage {
         review.getReviewId());
     review.setUseful(useful);
 
-    return review;
+    ReviewDto updatedReview = jdbc.queryForObject(SELECT_REVIEW_BY_ID, new ReviewRowMapper(), review.getReviewId());
+
+    return ReviewMapper.toReview(updatedReview);
   }
 
   //--- Удаление отзыва по id ----------------------------------------------------------------------------------------
