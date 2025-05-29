@@ -32,6 +32,7 @@ public class FeedDbStorage extends BaseDbStorage implements FeedStorage {
     }
 
     public List<Event> getFeed(Long id) {
+        checkUserExists(id);
         return jdbc.query(GET_FEED, mapper, id);
     }
 

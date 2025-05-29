@@ -52,7 +52,9 @@ public class ReviewService {
 
     public Review updateReview(Review review) {
         Review updateReview = reviewStorage.updateReview(review);
-        feedService.addEvent(review.getUserId(), EventType.REVIEW, EventOperation.UPDATE,
+        Review oldReview = reviewStorage.getReview(updateReview.getReviewId())
+                .orElseThrow(() -> new NotFoundException("Review not found"));;
+        feedService.addEvent(oldReview.getUserId(), EventType.REVIEW, EventOperation.UPDATE,
                 updateReview.getReviewId());
         return updateReview;
     }
