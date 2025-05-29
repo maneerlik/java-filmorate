@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DirectorDto {
 
-  private Long id;
-  private String name;
+    private Long id;
+    private String name;
 }

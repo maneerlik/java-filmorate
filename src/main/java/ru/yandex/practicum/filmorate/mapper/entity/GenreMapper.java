@@ -5,12 +5,12 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 public class GenreMapper {
 
-  public static Genre toGenre(GenreDto genreDto) {
-    Genre genre = new Genre();
+    public static Genre toGenre(GenreDto genreDto) {
+        Genre genre = new Genre();
 
-    genre.setId(genreDto.getId());
-    genre.setName(genreDto.getName());
+        genre.setId(genreDto.getId());
+        genre.setName(genreDto.getName());
 
-    return genre;
-  }
+        return genre;
+    }
 }

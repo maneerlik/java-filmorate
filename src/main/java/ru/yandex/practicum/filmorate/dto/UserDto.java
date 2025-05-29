@@ -14,10 +14,10 @@ import java.util.Set;
 @AllArgsConstructor
 public class UserDto {
 
-  private Long id;
-  private String email;
-  private String login;
-  private String name;
-  private LocalDate birthday;
-  private Set<Long> friends;
+    private Long id;
+    private String email;
+    private String login;
+    private String name;
+    private LocalDate birthday;
+    private Set<Long> friends;
 }

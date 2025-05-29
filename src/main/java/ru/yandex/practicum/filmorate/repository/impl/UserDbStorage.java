@@ -34,244 +34,235 @@ import java.util.*;
 @Slf4j
 public class UserDbStorage extends BaseDbStorage implements UserStorage {
 
-  public static final String INSERT_USER_QUERY = """
-      INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?);
-      """;
+    public static final String INSERT_USER_QUERY = """
+            INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?);
+            """;
+    public static final String FIND_FRIEND_LIST_OF_USER_BY_USER_ID = """
+            SELECT u.*
+            FROM users u
+            JOIN user_friends uf
+            ON u.id = uf.friend_id
+            WHERE uf.user_id = ?;
+            """;
+    public static final String FIND_FRIEND_IDS_LIST_OF_USER_BY_USER_ID = """
+            SELECT friend_id
+            FROM user_friends
+            WHERE user_id = ?;
+            """;
+    public static final String FIND_COMMON_FRIEND_LIST_BU_USERS_ID = """
+            SELECT u.*
+            FROM users u
+            JOIN user_friends uf1
+            ON u.id = uf1.friend_id
+            JOIN user_friends uf2
+            ON u.id = uf2.friend_id
+            WHERE uf1.user_id = ?
+            AND uf2.user_id = ?;
+            """;
+    public static final String FIND_ALL_USERS_QUERY = """
+            SELECT * FROM users;
+            """;
+    public static final String FIND_USER_BY_ID = """
+            SELECT *
+            FROM users
+            WHERE id = ?;
+            """;
+    public static final String UPDATE_USER_QUERY = """
+            UPDATE users
+            SET email = ?, login = ?, name = ?, birthday = ?
+            WHERE id = ?;
+            """;
+    private static final String INSERT_FRIENDSHIP_QUERY = """
+            INSERT INTO user_friends (user_id, friend_id) VALUES (?, ?);
+            """;
+    private static final String USER_FRIENDSHIP_FIND_REQUEST = """
+            SELECT COUNT(*)
+            FROM user_friends
+            WHERE user_id = ?
+            AND friend_id = ?;
+            """;
+    private static final String DELETE_FRIENDSHIP_QUERY = """
+            DELETE FROM user_friends
+            WHERE (user_id = ? AND friend_id = ?);
+            """;
 
-  private static final String INSERT_FRIENDSHIP_QUERY = """
-      INSERT INTO user_friends (user_id, friend_id) VALUES (?, ?);
-      """;
+    private static final String DELETE_USER_BY_ID = """
+            DELETE FROM users
+            WHERE id = ?;
+            """;
 
-  private static final String USER_FRIENDSHIP_FIND_REQUEST = """
-      SELECT COUNT(*)
-      FROM user_friends
-      WHERE user_id = ?
-      AND friend_id = ?;
-      """;
-
-  public static final String FIND_FRIEND_LIST_OF_USER_BY_USER_ID = """
-      SELECT u.*
-      FROM users u
-      JOIN user_friends uf
-      ON u.id = uf.friend_id
-      WHERE uf.user_id = ?;
-      """;
-
-  public static final String FIND_FRIEND_IDS_LIST_OF_USER_BY_USER_ID = """
-      SELECT friend_id
-      FROM user_friends
-      WHERE user_id = ?;
-      """;
-
-  public static final String FIND_COMMON_FRIEND_LIST_BU_USERS_ID = """
-      SELECT u.*
-      FROM users u
-      JOIN user_friends uf1
-      ON u.id = uf1.friend_id
-      JOIN user_friends uf2
-      ON u.id = uf2.friend_id
-      WHERE uf1.user_id = ?
-      AND uf2.user_id = ?;
-      """;
-
-  public static final String FIND_ALL_USERS_QUERY = """
-      SELECT * FROM users;
-      """;
-
-  public static final String FIND_USER_BY_ID = """
-      SELECT *
-      FROM users
-      WHERE id = ?;
-      """;
-
-  public static final String UPDATE_USER_QUERY = """
-      UPDATE users
-      SET email = ?, login = ?, name = ?, birthday = ?
-      WHERE id = ?;
-      """;
-
-  private static final String DELETE_FRIENDSHIP_QUERY = """
-      DELETE FROM user_friends
-      WHERE (user_id = ? AND friend_id = ?);
-      """;
-
-  private static final String DELETE_USER_BY_ID = """
-      DELETE FROM users
-      WHERE id = ?;
-      """;
-
-  public UserDbStorage(JdbcTemplate jdbc) {
-    super(jdbc);
-  }
-
-
-  //--- Создать пользователя -----------------------------------------------------------------------------------------
-  @Override
-  public User createUser(User user) {
-    KeyHolder keyHolder = new GeneratedKeyHolder();
-
-    jdbc.update(connection -> {
-      PreparedStatement stmt = connection.prepareStatement(INSERT_USER_QUERY,
-          Statement.RETURN_GENERATED_KEYS);
-
-      stmt.setString(1, user.getEmail());
-      stmt.setString(2, user.getLogin());
-      stmt.setString(3, user.getName());
-      stmt.setDate(4,
-          user.getBirthday() != null ? java.sql.Date.valueOf(user.getBirthday()) : null);
-
-      return stmt;
-    }, keyHolder);
-
-    Long userId = keyHolder.getKeyAs(Long.class);
-    user.setId(userId);
-    log.info("Successfully created user with id: {}", userId);
-
-    return user;
-  }
-
-  //--- Получить пользователя по id ----------------------------------------------------------------------------------
-  @Override
-  public Optional<User> getUser(Long id) {
-    checkUserExists(id);
-    Objects.requireNonNull(id, "User id cannot be null");
-
-    UserDto userDto = jdbc.queryForObject(FIND_USER_BY_ID, new UserRowMapper(), id);
-
-    if (userDto != null) {
-      // загрузить друзей пользователя
-      loadFriends(userDto.getId());
-      return Optional.of(UserMapper.toUser(userDto));
+    public UserDbStorage(JdbcTemplate jdbc) {
+        super(jdbc);
     }
 
-    log.warn("User with id {} not found", id);
-    return Optional.empty();
-  }
 
-  //--- Получить список всех пользователей ---------------------------------------------------------------------------
-  @Override
-  public Collection<User> getAllUsers() {
-    List<UserDto> allUsers = jdbc.query(FIND_ALL_USERS_QUERY, new UserRowMapper());
+    //--- Создать пользователя -----------------------------------------------------------------------------------------
+    @Override
+    public User createUser(User user) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-    // загрузить друзей для всех пользователей
-    allUsers.forEach(this::enrichUserWithFriends);
+        jdbc.update(connection -> {
+            PreparedStatement stmt = connection.prepareStatement(INSERT_USER_QUERY,
+                    Statement.RETURN_GENERATED_KEYS);
 
-    return allUsers.stream()
-        .map(UserMapper::toUser)
-        .toList();
-  }
+            stmt.setString(1, user.getEmail());
+            stmt.setString(2, user.getLogin());
+            stmt.setString(3, user.getName());
+            stmt.setDate(4,
+                    user.getBirthday() != null ? java.sql.Date.valueOf(user.getBirthday()) : null);
 
-  //--- Обновить пользователя ----------------------------------------------------------------------------------------
-  @Override
-  public Optional<User> updateUser(User user) {
-    Objects.requireNonNull(user.getId(), "User id cannot be null");
+            return stmt;
+        }, keyHolder);
 
-    int rowsAffected = jdbc.update(
-        UPDATE_USER_QUERY,
-        user.getEmail(),
-        user.getLogin(),
-        user.getName(),
-        user.getBirthday(),
-        user.getId()
-    );
+        Long userId = keyHolder.getKeyAs(Long.class);
+        user.setId(userId);
+        log.info("Successfully created user with id: {}", userId);
 
-    if (rowsAffected > 0) {
-      log.info("Successfully updated user with id: {}", user.getId());
-      return Optional.of(user);
+        return user;
     }
 
-    log.warn("No user found with id: {} for update", user.getId());
-    return Optional.empty();
-  }
+    //--- Получить пользователя по id ----------------------------------------------------------------------------------
+    @Override
+    public Optional<User> getUser(Long id) {
+        checkUserExists(id);
+        Objects.requireNonNull(id, "User id cannot be null");
 
-  //--- Добавить дружбу ----------------------------------------------------------------------------------------------
-  @Override
-  public Optional<Boolean> addFriend(Long user1, Long user2) {
-    Objects.requireNonNull(user1, "User1 id cannot be null");
-    Objects.requireNonNull(user2, "User2 id cannot be null");
+        UserDto userDto = jdbc.queryForObject(FIND_USER_BY_ID, new UserRowMapper(), id);
 
-    // проверить существование пользователей
-    checkUserExists(user1);
-    checkUserExists(user2);
+        if (userDto != null) {
+            // загрузить друзей пользователя
+            loadFriends(userDto.getId());
+            return Optional.of(UserMapper.toUser(userDto));
+        }
 
-    // проверить существование дружбы
-    int count = Optional.ofNullable(
-            jdbc.queryForObject(USER_FRIENDSHIP_FIND_REQUEST, Integer.class, user1, user2))
-        .orElse(0);
-
-    if (count > 0) {
-      log.warn("Friendship already exists between users {} and {}", user1, user2);
-      return Optional.of(false);
+        log.warn("User with id {} not found", id);
+        return Optional.empty();
     }
 
-    // добавить дружбу
-    int rowsAffected = jdbc.update(INSERT_FRIENDSHIP_QUERY, user1, user2);
-    log.info("Added friendship between users {} and {}, rows affected: {}", user1, user2,
-        rowsAffected);
-    return Optional.of(rowsAffected > 0);
-  }
+    //--- Получить список всех пользователей ---------------------------------------------------------------------------
+    @Override
+    public Collection<User> getAllUsers() {
+        List<UserDto> allUsers = jdbc.query(FIND_ALL_USERS_QUERY, new UserRowMapper());
 
-  //--- Удалить дружбу -----------------------------------------------------------------------------------------------
-  @Override
-  public Optional<Boolean> removeFriend(Long userId, Long friendId) {
-    // проверить существование пользователей
-    checkUserExists(userId);
-    checkUserExists(friendId);
+        // загрузить друзей для всех пользователей
+        allUsers.forEach(this::enrichUserWithFriends);
 
-    int rowsAffected = jdbc.update(DELETE_FRIENDSHIP_QUERY, userId, friendId);
-    return Optional.of(rowsAffected > 0);
-  }
+        return allUsers.stream()
+                .map(UserMapper::toUser)
+                .toList();
+    }
 
-  //--- Получить список общих друзей пользователя --------------------------------------------------------------------
-  @Override
-  public Optional<Collection<User>> getCommonFriends(Long userId, Long friendId) {
-    List<UserDto> commonFriends = jdbc.query(
-        FIND_COMMON_FRIEND_LIST_BU_USERS_ID, new UserRowMapper(),
-        userId, friendId
-    );
+    //--- Обновить пользователя ----------------------------------------------------------------------------------------
+    @Override
+    public Optional<User> updateUser(User user) {
+        Objects.requireNonNull(user.getId(), "User id cannot be null");
 
-    // загрузить друзей для выбранных пользователей
-    commonFriends.forEach(this::enrichUserWithFriends);
+        int rowsAffected = jdbc.update(
+                UPDATE_USER_QUERY,
+                user.getEmail(),
+                user.getLogin(),
+                user.getName(),
+                user.getBirthday(),
+                user.getId()
+        );
 
-    return Optional.of(commonFriends.stream()
-        .map(UserMapper::toUser)
-        .toList());
-  }
+        if (rowsAffected > 0) {
+            log.info("Successfully updated user with id: {}", user.getId());
+            return Optional.of(user);
+        }
 
-  //--- Получить список друзей пользователя --------------------------------------------------------------------------
-  @Override
-  public Optional<Collection<User>> getFriends(Long userId) {
-    // проверить существование пользователя
-    checkUserExists(userId);
+        log.warn("No user found with id: {} for update", user.getId());
+        return Optional.empty();
+    }
 
-    // получить список друзей
-    List<UserDto> friends = jdbc.query(FIND_FRIEND_LIST_OF_USER_BY_USER_ID, new UserRowMapper(),
-        userId);
+    //--- Добавить дружбу ----------------------------------------------------------------------------------------------
+    @Override
+    public Optional<Boolean> addFriend(Long user1, Long user2) {
+        Objects.requireNonNull(user1, "User1 id cannot be null");
+        Objects.requireNonNull(user2, "User2 id cannot be null");
 
-    // загрузить друзей для выбранных пользователей
-    friends.forEach(this::enrichUserWithFriends);
+        // проверить существование пользователей
+        checkUserExists(user1);
+        checkUserExists(user2);
 
-    return Optional.of(friends.stream()
-        .map(UserMapper::toUser)
-        .toList());
-  }
+        // проверить существование дружбы
+        int count = Optional.ofNullable(
+                        jdbc.queryForObject(USER_FRIENDSHIP_FIND_REQUEST, Integer.class, user1, user2))
+                .orElse(0);
 
-  //--- Удалить пользователя по id -----------------------------------------------------------------------------------
-  @Override
-  public void deleteUserById(Long userId) {
-    checkUserExists(userId);
-    jdbc.update(DELETE_USER_BY_ID, userId);
-    log.info("Successfully deleted user with id: {}", userId);
-  }
+        if (count > 0) {
+            log.warn("Friendship already exists between users {} and {}", user1, user2);
+            return Optional.of(false);
+        }
 
-  //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-  private Set<Long> loadFriends(Long userId) {
-    return new HashSet<>(
-        jdbc.queryForList(FIND_FRIEND_IDS_LIST_OF_USER_BY_USER_ID, Long.class, userId));
-  }
+        // добавить дружбу
+        int rowsAffected = jdbc.update(INSERT_FRIENDSHIP_QUERY, user1, user2);
+        log.info("Added friendship between users {} and {}, rows affected: {}", user1, user2,
+                rowsAffected);
+        return Optional.of(rowsAffected > 0);
+    }
 
-  private void enrichUserWithFriends(UserDto userDto) {
-    long userId = userDto.getId();
-    userDto.setFriends(loadFriends(userId));
-  }
+    //--- Удалить дружбу -----------------------------------------------------------------------------------------------
+    @Override
+    public Optional<Boolean> removeFriend(Long userId, Long friendId) {
+        // проверить существование пользователей
+        checkUserExists(userId);
+        checkUserExists(friendId);
+
+        int rowsAffected = jdbc.update(DELETE_FRIENDSHIP_QUERY, userId, friendId);
+        return Optional.of(rowsAffected > 0);
+    }
+
+    //--- Получить список общих друзей пользователя --------------------------------------------------------------------
+    @Override
+    public Optional<Collection<User>> getCommonFriends(Long userId, Long friendId) {
+        List<UserDto> commonFriends = jdbc.query(
+                FIND_COMMON_FRIEND_LIST_BU_USERS_ID, new UserRowMapper(),
+                userId, friendId
+        );
+
+        // загрузить друзей для выбранных пользователей
+        commonFriends.forEach(this::enrichUserWithFriends);
+
+        return Optional.of(commonFriends.stream()
+                .map(UserMapper::toUser)
+                .toList());
+    }
+
+    //--- Получить список друзей пользователя --------------------------------------------------------------------------
+    @Override
+    public Optional<Collection<User>> getFriends(Long userId) {
+        // проверить существование пользователя
+        checkUserExists(userId);
+
+        // получить список друзей
+        List<UserDto> friends = jdbc.query(FIND_FRIEND_LIST_OF_USER_BY_USER_ID, new UserRowMapper(),
+                userId);
+
+        // загрузить друзей для выбранных пользователей
+        friends.forEach(this::enrichUserWithFriends);
+
+        return Optional.of(friends.stream()
+                .map(UserMapper::toUser)
+                .toList());
+    }
+
+    //--- Удалить пользователя по id -----------------------------------------------------------------------------------
+    @Override
+    public void deleteUserById(Long userId) {
+        checkUserExists(userId);
+        jdbc.update(DELETE_USER_BY_ID, userId);
+        log.info("Successfully deleted user with id: {}", userId);
+    }
+
+    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
+    private Set<Long> loadFriends(Long userId) {
+        return new HashSet<>(
+                jdbc.queryForList(FIND_FRIEND_IDS_LIST_OF_USER_BY_USER_ID, Long.class, userId));
+    }
+
+    private void enrichUserWithFriends(UserDto userDto) {
+        long userId = userDto.getId();
+        userDto.setFriends(loadFriends(userId));
+    }
 }

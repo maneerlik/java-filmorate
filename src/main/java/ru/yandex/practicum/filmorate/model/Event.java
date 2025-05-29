@@ -11,10 +11,10 @@ import ru.yandex.practicum.filmorate.model.enumeration.EventType;
 @NoArgsConstructor
 public class Event {
 
-  private Long timestamp;
-  private Long userId;
-  private EventType eventType;
-  private EventOperation operation;
-  private Long eventId;
-  private Long entityId;
+    private Long timestamp;
+    private Long userId;
+    private EventType eventType;
+    private EventOperation operation;
+    private Long eventId;
+    private Long entityId;
 }

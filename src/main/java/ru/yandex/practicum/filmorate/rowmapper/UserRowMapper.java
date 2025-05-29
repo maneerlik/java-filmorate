@@ -10,18 +10,18 @@ import java.util.Set;
 
 public class UserRowMapper implements RowMapper<UserDto> {
 
-  @Override
-  public UserDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-    Set<Long> friends = new HashSet<>();
+    @Override
+    public UserDto mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Set<Long> friends = new HashSet<>();
 
-    // друзья будут загружены и добавлены в userDto отдельно
-    return UserDto.builder()
-        .id(rs.getLong("id"))
-        .email(rs.getString("email"))
-        .login(rs.getString("login"))
-        .name(rs.getString("name"))
-        .birthday(rs.getDate("birthday") != null ? rs.getDate("birthday").toLocalDate() : null)
-        .friends(friends)
-        .build();
-  }
+        // друзья будут загружены и добавлены в userDto отдельно
+        return UserDto.builder()
+                .id(rs.getLong("id"))
+                .email(rs.getString("email"))
+                .login(rs.getString("login"))
+                .name(rs.getString("name"))
+                .birthday(rs.getDate("birthday") != null ? rs.getDate("birthday").toLocalDate() : null)
+                .friends(friends)
+                .build();
+    }
 }

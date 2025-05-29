@@ -40,37 +40,37 @@ import java.util.Set;
 @AllArgsConstructor
 public class Film {
 
-  @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
-  private Long id;
+    @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
+    private Long id;
 
-  @NotBlank(message = "Name cannot be empty", groups = Default.class)
-  private String name;
+    @NotBlank(message = "Name cannot be empty", groups = Default.class)
+    private String name;
 
-  @Size(
-      max = 200,
-      message = "Max description length is 200 characters",
-      groups = {Default.class, UpdateValidationGroup.class}
-  )
-  private String description;
+    @Size(
+            max = 200,
+            message = "Max description length is 200 characters",
+            groups = {Default.class, UpdateValidationGroup.class}
+    )
+    private String description;
 
-  @ReleaseDate(
-      message = "Minimal release date is 1895-12-28",
-      groups = {Default.class, UpdateValidationGroup.class}
-  )
-  private LocalDate releaseDate;
+    @ReleaseDate(
+            message = "Minimal release date is 1895-12-28",
+            groups = {Default.class, UpdateValidationGroup.class}
+    )
+    private LocalDate releaseDate;
 
-  @Positive(
-      message = "Film duration must be a positive number",
-      groups = {Default.class, UpdateValidationGroup.class}
-  )
-  private Long duration;
+    @Positive(
+            message = "Film duration must be a positive number",
+            groups = {Default.class, UpdateValidationGroup.class}
+    )
+    private Long duration;
 
-  @NotNull(message = "MPAA rating cannot be empty", groups = Default.class)
-  private MpaRating mpa;
+    @NotNull(message = "MPAA rating cannot be empty", groups = Default.class)
+    private MpaRating mpa;
 
-  private List<Genre> genres = new ArrayList<>();
+    private List<Genre> genres = new ArrayList<>();
 
-  private List<Director> directors = new ArrayList<>();
+    private List<Director> directors = new ArrayList<>();
 
-  private Set<Long> likes = new HashSet<>();
+    private Set<Long> likes = new HashSet<>();
 }

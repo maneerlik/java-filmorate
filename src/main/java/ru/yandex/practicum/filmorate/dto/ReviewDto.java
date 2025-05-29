@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReviewDto {
 
-  private Long id;
-  private String content;
-  private Boolean isPositive;
-  private Long userId;
-  private Long filmId;
-  private Integer useful;
+    private Long id;
+    private String content;
+    private Boolean isPositive;
+    private Long userId;
+    private Long filmId;
+    private Integer useful;
 }

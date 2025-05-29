@@ -16,74 +16,74 @@ import java.util.Collection;
 @RequestMapping("/users")
 public class UserController {
 
-  private final UserService userService;
-  private final RecommendationService recommendationService;
+    private final UserService userService;
+    private final RecommendationService recommendationService;
 
-  public UserController(UserService userService, RecommendationService recommendationService) {
-    this.userService = userService;
-    this.recommendationService = recommendationService;
-  }
+    public UserController(UserService userService, RecommendationService recommendationService) {
+        this.userService = userService;
+        this.recommendationService = recommendationService;
+    }
 
 
-  @PostMapping
-  @ResponseStatus(HttpStatus.CREATED)
-  public User create(@RequestBody User user) {
-    return userService.create(user);
-  }
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public User create(@RequestBody User user) {
+        return userService.create(user);
+    }
 
-  @GetMapping("/{id}")
-  public User getById(@PathVariable Long id) {
-    return userService.getUser(id);
-  }
+    @GetMapping("/{id}")
+    public User getById(@PathVariable Long id) {
+        return userService.getUser(id);
+    }
 
-  @GetMapping
-  public Collection<User> findAll() {
-    return userService.findAll();
-  }
+    @GetMapping
+    public Collection<User> findAll() {
+        return userService.findAll();
+    }
 
-  @PutMapping
-  public User update(@RequestBody User newUser) {
-    return userService.update(newUser);
-  }
+    @PutMapping
+    public User update(@RequestBody User newUser) {
+        return userService.update(newUser);
+    }
 
-  @PutMapping("/{id}/friends/{otherId}")
-  public void addFriend(
-      @PathVariable Long id,
-      @PathVariable Long otherId
-  ) {
-    userService.addFriend(id, otherId);
-  }
+    @PutMapping("/{id}/friends/{otherId}")
+    public void addFriend(
+            @PathVariable Long id,
+            @PathVariable Long otherId
+    ) {
+        userService.addFriend(id, otherId);
+    }
 
-  @DeleteMapping("/{id}/friends/{otherId}")
-  public void removeFriend(
-      @PathVariable Long id,
-      @PathVariable Long otherId
-  ) {
-    userService.removeFriend(id, otherId);
-  }
+    @DeleteMapping("/{id}/friends/{otherId}")
+    public void removeFriend(
+            @PathVariable Long id,
+            @PathVariable Long otherId
+    ) {
+        userService.removeFriend(id, otherId);
+    }
 
-  @GetMapping("/{id}/friends/common/{otherId}")
-  public Collection<User> getCommonFriends(
-      @PathVariable Long id,
-      @PathVariable Long otherId
-  ) {
-    return userService.getCommonFriends(id, otherId);
-  }
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(
+            @PathVariable Long id,
+            @PathVariable Long otherId
+    ) {
+        return userService.getCommonFriends(id, otherId);
+    }
 
-  @GetMapping("/{id}/friends")
-  public Collection<User> getFriends(@PathVariable Long id) {
-    return userService.getFriends(id);
-  }
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable Long id) {
+        return userService.getFriends(id);
+    }
 
-  @ResponseStatus(HttpStatus.OK)
-  @GetMapping("/{id}/recommendations")
-  public Collection<Film> getRecommendations(@PathVariable Long id) {
-    return recommendationService.getRecommendations(id);
-  }
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable Long id) {
+        return recommendationService.getRecommendations(id);
+    }
 
-  @DeleteMapping("/{userId}")
-  public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
-    userService.deleteUserById(userId);
-    return ResponseEntity.ok().build();
-  }
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.ok().build();
+    }
 }

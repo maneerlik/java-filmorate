@@ -14,21 +14,21 @@ import java.util.Collection;
 @RequestMapping("/mpa")
 public class MpaRatingController {
 
-  private final MpaRatingService mpaRatingService;
+    private final MpaRatingService mpaRatingService;
 
-  public MpaRatingController(MpaRatingService mpaRatingService) {
-    this.mpaRatingService = mpaRatingService;
-  }
+    public MpaRatingController(MpaRatingService mpaRatingService) {
+        this.mpaRatingService = mpaRatingService;
+    }
 
 
-  @GetMapping("/{id}")
-  public MpaRating getMpaRating(@PathVariable Long id) {
-    return mpaRatingService.getMpaRating(id)
-        .orElseThrow(() -> new NotFoundException("Rating not found"));
-  }
+    @GetMapping("/{id}")
+    public MpaRating getMpaRating(@PathVariable Long id) {
+        return mpaRatingService.getMpaRating(id)
+                .orElseThrow(() -> new NotFoundException("Rating not found"));
+    }
 
-  @GetMapping
-  public Collection<MpaRating> getAllMpaRatings() {
-    return mpaRatingService.findAll();
-  }
+    @GetMapping
+    public Collection<MpaRating> getAllMpaRatings() {
+        return mpaRatingService.findAll();
+    }
 }

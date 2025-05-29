@@ -14,20 +14,20 @@ import java.util.Collection;
 @RequestMapping("/genres")
 public class GenreController {
 
-  private final GenreService genreService;
+    private final GenreService genreService;
 
-  public GenreController(GenreService genreService) {
-    this.genreService = genreService;
-  }
+    public GenreController(GenreService genreService) {
+        this.genreService = genreService;
+    }
 
-  @GetMapping("/{id}")
-  public Genre getGenre(@PathVariable Long id) {
-    return genreService.getGenre(id)
-        .orElseThrow(() -> new NotFoundException("Genre not found"));
-  }
+    @GetMapping("/{id}")
+    public Genre getGenre(@PathVariable Long id) {
+        return genreService.getGenre(id)
+                .orElseThrow(() -> new NotFoundException("Genre not found"));
+    }
 
-  @GetMapping
-  public Collection<Genre> findAll() {
-    return genreService.findAll();
-  }
+    @GetMapping
+    public Collection<Genre> findAll() {
+        return genreService.findAll();
+    }
 }

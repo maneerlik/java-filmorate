@@ -5,12 +5,12 @@ import ru.yandex.practicum.filmorate.model.Director;
 
 public class DirectorMapper {
 
-  public static Director toDirector(DirectorDto directorDto) {
-    Director director = new Director();
+    public static Director toDirector(DirectorDto directorDto) {
+        Director director = new Director();
 
-    director.setId(directorDto.getId());
-    director.setName(directorDto.getName());
+        director.setId(directorDto.getId());
+        director.setName(directorDto.getName());
 
-    return director;
-  }
+        return director;
+    }
 }

@@ -24,33 +24,33 @@ import java.util.Optional;
 @Repository
 public class GenreDbStorage extends BaseDbStorage implements GenreStorage {
 
-  public static final String FIND_GENRE_BY_ID = """
-      SELECT *
-      FROM genres
-      WHERE id = ?;
-      """;
+    public static final String FIND_GENRE_BY_ID = """
+            SELECT *
+            FROM genres
+            WHERE id = ?;
+            """;
 
-  public static final String FIND_ALL_GENRES = """
-      SELECT * FROM genres;
-      """;
+    public static final String FIND_ALL_GENRES = """
+            SELECT * FROM genres;
+            """;
 
-  public GenreDbStorage(final JdbcTemplate jdbc) {
-    super(jdbc);
-  }
+    public GenreDbStorage(final JdbcTemplate jdbc) {
+        super(jdbc);
+    }
 
 
-  //--- Получить жанр по id ------------------------------------------------------------------------------------------
-  @Override
-  public Optional<Genre> getGenre(Long id) {
-    Objects.requireNonNull(id, "Genre id cannot be null");
-    checkGenresExist(id);
-    Genre genre = jdbc.queryForObject(FIND_GENRE_BY_ID, new GenreRowMapper(), id);
-    return Optional.ofNullable(genre);
-  }
+    //--- Получить жанр по id ------------------------------------------------------------------------------------------
+    @Override
+    public Optional<Genre> getGenre(Long id) {
+        Objects.requireNonNull(id, "Genre id cannot be null");
+        checkGenresExist(id);
+        Genre genre = jdbc.queryForObject(FIND_GENRE_BY_ID, new GenreRowMapper(), id);
+        return Optional.ofNullable(genre);
+    }
 
-  //--- Получить все жанры -------------------------------------------------------------------------------------------
-  @Override
-  public Collection<Genre> getAllGenres() {
-    return jdbc.query(FIND_ALL_GENRES, new GenreRowMapper());
-  }
+    //--- Получить все жанры -------------------------------------------------------------------------------------------
+    @Override
+    public Collection<Genre> getAllGenres() {
+        return jdbc.query(FIND_ALL_GENRES, new GenreRowMapper());
+    }
 }

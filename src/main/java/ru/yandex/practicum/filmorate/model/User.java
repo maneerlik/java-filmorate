@@ -34,35 +34,35 @@ import java.util.Set;
 @AllArgsConstructor
 public class User {
 
-  @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
-  private Long id;
+    @NotNull(message = "Id cannot be empty", groups = UpdateValidationGroup.class)
+    private Long id;
 
-  @NotBlank(message = "Email cannot be empty", groups = Default.class)
-  @Email(
-      message = "Email must contain '@' and a valid domain name",
-      groups = {Default.class, UpdateValidationGroup.class}
-  )
-  private String email;
+    @NotBlank(message = "Email cannot be empty", groups = Default.class)
+    @Email(
+            message = "Email must contain '@' and a valid domain name",
+            groups = {Default.class, UpdateValidationGroup.class}
+    )
+    private String email;
 
-  @NotBlank(message = "Login cannot be empty", groups = Default.class)
-  @Pattern(
-      regexp = "\\S+", message = "Login must not contain spaces",
-      groups = {Default.class, UpdateValidationGroup.class}
-  )
-  private String login;
+    @NotBlank(message = "Login cannot be empty", groups = Default.class)
+    @Pattern(
+            regexp = "\\S+", message = "Login must not contain spaces",
+            groups = {Default.class, UpdateValidationGroup.class}
+    )
+    private String login;
 
-  private String name;
+    private String name;
 
-  @Past(
-      message = "Birthday cannot be in the future",
-      groups = {Default.class, UpdateValidationGroup.class}
-  )
-  private LocalDate birthday;
+    @Past(
+            message = "Birthday cannot be in the future",
+            groups = {Default.class, UpdateValidationGroup.class}
+    )
+    private LocalDate birthday;
 
-  private Set<Long> friends = new HashSet<>();
+    private Set<Long> friends = new HashSet<>();
 
 
-  public String getName() {
-    return name == null || name.isBlank() ? login : name;
-  }
+    public String getName() {
+        return name == null || name.isBlank() ? login : name;
+    }
 }

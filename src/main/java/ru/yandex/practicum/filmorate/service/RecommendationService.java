@@ -13,10 +13,10 @@ import java.util.Collection;
 @AllArgsConstructor
 public class RecommendationService {
 
-  private final FilmStorage filmStorage;
+    private final FilmStorage filmStorage;
 
-  public Collection<Film> getRecommendations(Long userId) {
-    return filmStorage.getRecommendations(userId);
-  }
+    public Collection<Film> getRecommendations(Long userId) {
+        return filmStorage.getRecommendations(userId);
+    }
 
 }

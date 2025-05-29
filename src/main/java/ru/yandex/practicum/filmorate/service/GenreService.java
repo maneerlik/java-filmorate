@@ -11,19 +11,19 @@ import java.util.Optional;
 @Service
 public class GenreService {
 
-  private final GenreStorage genreStorage;
+    private final GenreStorage genreStorage;
 
-  @Autowired
-  public GenreService(GenreStorage genreStorage) {
-    this.genreStorage = genreStorage;
-  }
+    @Autowired
+    public GenreService(GenreStorage genreStorage) {
+        this.genreStorage = genreStorage;
+    }
 
 
-  public Optional<Genre> getGenre(Long id) {
-    return genreStorage.getGenre(id);
-  }
+    public Optional<Genre> getGenre(Long id) {
+        return genreStorage.getGenre(id);
+    }
 
-  public Collection<Genre> findAll() {
-    return genreStorage.getAllGenres();
-  }
+    public Collection<Genre> findAll() {
+        return genreStorage.getAllGenres();
+    }
 }

@@ -10,18 +10,18 @@ import java.util.Optional;
 @Service
 public class MpaRatingService {
 
-  private final MpaRatingStorage mpaRatingStorage;
+    private final MpaRatingStorage mpaRatingStorage;
 
-  public MpaRatingService(MpaRatingStorage mpaRatingStorage) {
-    this.mpaRatingStorage = mpaRatingStorage;
-  }
+    public MpaRatingService(MpaRatingStorage mpaRatingStorage) {
+        this.mpaRatingStorage = mpaRatingStorage;
+    }
 
 
-  public Optional<MpaRating> getMpaRating(Long id) {
-    return mpaRatingStorage.getMpaRating(id);
-  }
+    public Optional<MpaRating> getMpaRating(Long id) {
+        return mpaRatingStorage.getMpaRating(id);
+    }
 
-  public Collection<MpaRating> findAll() {
-    return mpaRatingStorage.getAllMpaRatings();
-  }
+    public Collection<MpaRating> findAll() {
+        return mpaRatingStorage.getAllMpaRatings();
+    }
 }

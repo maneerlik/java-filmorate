@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class GenreDto {
 
-  private Long id;
-  private String name;
+    private Long id;
+    private String name;
 }

@@ -8,11 +8,11 @@ import java.sql.SQLException;
 
 public class GenreDtoRowMapper implements RowMapper<GenreDto> {
 
-  @Override
-  public GenreDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-    return GenreDto.builder()
-        .id(rs.getLong("id"))
-        .name(rs.getString("name"))
-        .build();
-  }
+    @Override
+    public GenreDto mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return GenreDto.builder()
+                .id(rs.getLong("id"))
+                .name(rs.getString("name"))
+                .build();
+    }
 }

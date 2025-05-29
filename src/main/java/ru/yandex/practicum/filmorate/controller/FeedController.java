@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,11 +17,11 @@ import ru.yandex.practicum.filmorate.service.FeedService;
 @RequiredArgsConstructor
 public class FeedController {
 
-  private final FeedService feedService;
+    private final FeedService feedService;
 
-  @GetMapping
-  public List<Event> getFeed(@PathVariable Long id) {
-    log.info("Get feed for id {}", id);
-    return feedService.getFeed(id);
-  }
+    @GetMapping
+    public List<Event> getFeed(@PathVariable Long id) {
+        log.info("Get feed for id {}", id);
+        return feedService.getFeed(id);
+    }
 }
