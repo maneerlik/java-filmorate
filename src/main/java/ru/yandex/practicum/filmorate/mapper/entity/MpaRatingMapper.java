@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.dto.MpaRatingDto;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
 public class MpaRatingMapper {
+
     public static MpaRating toMpaRating(MpaRatingDto mpaRatingDto) {
         MpaRating mpaRating = new MpaRating();
 

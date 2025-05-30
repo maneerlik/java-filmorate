@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 public class GenreMapper {
+
     public static Genre toGenre(GenreDto genreDto) {
         Genre genre = new Genre();
 

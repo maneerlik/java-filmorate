@@ -2,8 +2,11 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -12,10 +15,13 @@ import java.util.Collection;
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
-    private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final UserService userService;
+    private final RecommendationService recommendationService;
+
+    public UserController(UserService userService, RecommendationService recommendationService) {
         this.userService = userService;
+        this.recommendationService = recommendationService;
     }
 
 
@@ -42,8 +48,8 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{otherId}")
     public void addFriend(
-        @PathVariable Long id,
-        @PathVariable Long otherId
+            @PathVariable Long id,
+            @PathVariable Long otherId
     ) {
         userService.addFriend(id, otherId);
     }
@@ -67,5 +73,17 @@ public class UserController {
     @GetMapping("/{id}/friends")
     public Collection<User> getFriends(@PathVariable Long id) {
         return userService.getFriends(id);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable Long id) {
+        return recommendationService.getRecommendations(id);
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.ok().build();
     }
 }

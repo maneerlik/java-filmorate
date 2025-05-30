@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Service
 public class MpaRatingService {
+
     private final MpaRatingStorage mpaRatingStorage;
 
     public MpaRatingService(MpaRatingStorage mpaRatingStorage) {

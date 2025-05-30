@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.repository.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.mapper.entity.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 import ru.yandex.practicum.filmorate.rowmapper.UserRowMapper;
 
@@ -18,41 +16,27 @@ import java.sql.Statement;
 import java.util.*;
 
 /**
- * Реализация хранилища пользователей в БД.
- * Обеспечивает CRUD-операции для пользователей, и управление дружескими связями.
- *
- * Основные возможности:
- * - Создание, обновление, получение пользователей
- * - Управление дружескими связями (добавление/удаление друзей)
- * - Получение списка друзей и общих друзей
- *
+ * Реализация хранилища пользователей в БД. Обеспечивает CRUD-операции для пользователей, и
+ * управление дружескими связями.
+ * <p>
+ * Основные возможности: - Создание, обновление, получение пользователей - Управление дружескими
+ * связями (добавление/удаление друзей) - Получение списка друзей и общих друзей
+ * <p>
  * Наследует базовую функциональность проверки существования сущностей из BaseDbStorage.
- *
+ * <p>
  * Аннотации:
+ *
  * @Repository - указывает, что класс является компонентом Spring Data Access Layer
- * @Primary - указывает на предпочтительную реализацию бина
  * @Slf4j - обеспечивает логгирование через SLF4J
  */
 
 @Repository
-@Primary
 @Slf4j
 public class UserDbStorage extends BaseDbStorage implements UserStorage {
+
     public static final String INSERT_USER_QUERY = """
             INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?);
             """;
-
-    private static final String INSERT_FRIENDSHIP_QUERY = """
-            INSERT INTO user_friends (user_id, friend_id) VALUES (?, ?);
-            """;
-
-    private static final String USER_FRIENDSHIP_FIND_REQUEST = """
-            SELECT COUNT(*)
-            FROM user_friends
-            WHERE user_id = ?
-            AND friend_id = ?;
-            """;
-
     public static final String FIND_FRIEND_LIST_OF_USER_BY_USER_ID = """
             SELECT u.*
             FROM users u
@@ -60,13 +44,11 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
             ON u.id = uf.friend_id
             WHERE uf.user_id = ?;
             """;
-
     public static final String FIND_FRIEND_IDS_LIST_OF_USER_BY_USER_ID = """
             SELECT friend_id
             FROM user_friends
             WHERE user_id = ?;
             """;
-
     public static final String FIND_COMMON_FRIEND_LIST_BU_USERS_ID = """
             SELECT u.*
             FROM users u
@@ -77,26 +59,36 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
             WHERE uf1.user_id = ?
             AND uf2.user_id = ?;
             """;
-
     public static final String FIND_ALL_USERS_QUERY = """
             SELECT * FROM users;
             """;
-
     public static final String FIND_USER_BY_ID = """
             SELECT *
             FROM users
             WHERE id = ?;
             """;
-
     public static final String UPDATE_USER_QUERY = """
             UPDATE users
             SET email = ?, login = ?, name = ?, birthday = ?
             WHERE id = ?;
             """;
-
+    private static final String INSERT_FRIENDSHIP_QUERY = """
+            INSERT INTO user_friends (user_id, friend_id) VALUES (?, ?);
+            """;
+    private static final String USER_FRIENDSHIP_FIND_REQUEST = """
+            SELECT COUNT(*)
+            FROM user_friends
+            WHERE user_id = ?
+            AND friend_id = ?;
+            """;
     private static final String DELETE_FRIENDSHIP_QUERY = """
             DELETE FROM user_friends
             WHERE (user_id = ? AND friend_id = ?);
+            """;
+
+    private static final String DELETE_USER_BY_ID = """
+            DELETE FROM users
+            WHERE id = ?;
             """;
 
     public UserDbStorage(JdbcTemplate jdbc) {
@@ -110,12 +102,14 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(INSERT_USER_QUERY, Statement.RETURN_GENERATED_KEYS);
+            PreparedStatement stmt = connection.prepareStatement(INSERT_USER_QUERY,
+                    Statement.RETURN_GENERATED_KEYS);
 
             stmt.setString(1, user.getEmail());
             stmt.setString(2, user.getLogin());
             stmt.setString(3, user.getName());
-            stmt.setDate(4, user.getBirthday() != null ? java.sql.Date.valueOf(user.getBirthday()) : null);
+            stmt.setDate(4,
+                    user.getBirthday() != null ? java.sql.Date.valueOf(user.getBirthday()) : null);
 
             return stmt;
         }, keyHolder);
@@ -130,6 +124,7 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
     //--- Получить пользователя по id ----------------------------------------------------------------------------------
     @Override
     public Optional<User> getUser(Long id) {
+        checkUserExists(id);
         Objects.requireNonNull(id, "User id cannot be null");
 
         UserDto userDto = jdbc.queryForObject(FIND_USER_BY_ID, new UserRowMapper(), id);
@@ -191,7 +186,8 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
         checkUserExists(user2);
 
         // проверить существование дружбы
-        int count = Optional.ofNullable(jdbc.queryForObject(USER_FRIENDSHIP_FIND_REQUEST, Integer.class, user1, user2))
+        int count = Optional.ofNullable(
+                        jdbc.queryForObject(USER_FRIENDSHIP_FIND_REQUEST, Integer.class, user1, user2))
                 .orElse(0);
 
         if (count > 0) {
@@ -201,7 +197,8 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
 
         // добавить дружбу
         int rowsAffected = jdbc.update(INSERT_FRIENDSHIP_QUERY, user1, user2);
-        log.info("Added friendship between users {} and {}, rows affected: {}", user1, user2, rowsAffected);
+        log.info("Added friendship between users {} and {}, rows affected: {}", user1, user2,
+                rowsAffected);
         return Optional.of(rowsAffected > 0);
     }
 
@@ -239,7 +236,8 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
         checkUserExists(userId);
 
         // получить список друзей
-        List<UserDto> friends = jdbc.query(FIND_FRIEND_LIST_OF_USER_BY_USER_ID, new UserRowMapper(), userId);
+        List<UserDto> friends = jdbc.query(FIND_FRIEND_LIST_OF_USER_BY_USER_ID, new UserRowMapper(),
+                userId);
 
         // загрузить друзей для выбранных пользователей
         friends.forEach(this::enrichUserWithFriends);
@@ -249,14 +247,18 @@ public class UserDbStorage extends BaseDbStorage implements UserStorage {
                 .toList());
     }
 
-
-    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkUserExists(Long userId) {
-        checkEntityExists(userId, EntityType.USER);
+    //--- Удалить пользователя по id -----------------------------------------------------------------------------------
+    @Override
+    public void deleteUserById(Long userId) {
+        checkUserExists(userId);
+        jdbc.update(DELETE_USER_BY_ID, userId);
+        log.info("Successfully deleted user with id: {}", userId);
     }
 
+    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
     private Set<Long> loadFriends(Long userId) {
-        return new HashSet<>(jdbc.queryForList(FIND_FRIEND_IDS_LIST_OF_USER_BY_USER_ID, Long.class, userId));
+        return new HashSet<>(
+                jdbc.queryForList(FIND_FRIEND_IDS_LIST_OF_USER_BY_USER_ID, Long.class, userId));
     }
 
     private void enrichUserWithFriends(UserDto userDto) {

@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.model.User;
 
 public class UserDtoMapper {
+
     public static UserDto toUserDto(User user) {
         return UserDto.builder()
                 .id(user.getId())

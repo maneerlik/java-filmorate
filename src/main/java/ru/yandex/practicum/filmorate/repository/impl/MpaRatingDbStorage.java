@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.repository.impl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.MpaRating;
-import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.MpaRatingStorage;
 import ru.yandex.practicum.filmorate.rowmapper.MpaRatingRowMapper;
 
@@ -12,11 +11,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Реализация хранилища рейтингов MPA (Motion Picture Association) в базе данных.
- * Предоставляет методы для работы с возрастными рейтингами фильмов:
- * - получение рейтинга по идентификатору
- * - получение списка всех доступных рейтингов
- *
+ * Реализация хранилища рейтингов MPA (Motion Picture Association) в базе данных. Предоставляет
+ * методы для работы с возрастными рейтингами фильмов: - получение рейтинга по идентификатору -
+ * получение списка всех доступных рейтингов
+ * <p>
  * Наследует базовую функциональность проверки существования сущностей из BaseDbStorage.
  *
  * @Repository - указывает, что класс является компонентом Spring Data Access Layer
@@ -24,6 +22,7 @@ import java.util.Optional;
 
 @Repository
 public class MpaRatingDbStorage extends BaseDbStorage implements MpaRatingStorage {
+
     public static final String FIND_MPA_RATING_BY_ID = """
             SELECT *
             FROM mpa_ratings
@@ -52,11 +51,5 @@ public class MpaRatingDbStorage extends BaseDbStorage implements MpaRatingStorag
     @Override
     public Collection<MpaRating> getAllMpaRatings() {
         return jdbc.query(FIND_ALL_MPA_RATINGS, new MpaRatingRowMapper());
-    }
-
-
-    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkMpaRatingExists(Long ratingId) {
-        checkEntityExists(ratingId, EntityType.MPA_RATING);
     }
 }

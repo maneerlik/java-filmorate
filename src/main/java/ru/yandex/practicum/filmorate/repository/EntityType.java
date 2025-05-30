@@ -4,5 +4,7 @@ public enum EntityType {
     USER,
     FILM,
     MPA_RATING,
-    GENRE
+    GENRE,
+    DIRECTOR,
+    REVIEW
 }

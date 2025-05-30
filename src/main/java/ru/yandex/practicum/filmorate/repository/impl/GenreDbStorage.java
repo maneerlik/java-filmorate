@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.repository.impl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.repository.EntityType;
 import ru.yandex.practicum.filmorate.repository.GenreStorage;
 import ru.yandex.practicum.filmorate.rowmapper.GenreRowMapper;
 
@@ -12,19 +11,19 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Реализация хранилища жанров в базе данных.
- * Предоставляет методы для получения информации о жанрах:
- * - поиск жанра по идентификатору
- * - получение списка всех жанров
- *
+ * Реализация хранилища жанров в базе данных. Предоставляет методы для получения информации о
+ * жанрах: - поиск жанра по идентификатору - получение списка всех жанров
+ * <p>
  * Наследует базовую функциональность проверки существования сущностей из BaseDbStorage.
- *
+ * <p>
  * Аннотации:
+ *
  * @Repository - указывает, что класс является компонентом Spring Data Access Layer
  */
 
 @Repository
 public class GenreDbStorage extends BaseDbStorage implements GenreStorage {
+
     public static final String FIND_GENRE_BY_ID = """
             SELECT *
             FROM genres
@@ -53,11 +52,5 @@ public class GenreDbStorage extends BaseDbStorage implements GenreStorage {
     @Override
     public Collection<Genre> getAllGenres() {
         return jdbc.query(FIND_ALL_GENRES, new GenreRowMapper());
-    }
-
-
-    //--- Вспомогательные методы ---------------------------------------------------------------------------------------
-    private void checkGenresExist(Long geneId) {
-        checkEntityExists(geneId, EntityType.GENRE);
     }
 }

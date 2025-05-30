@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface UserStorage {
+
     User createUser(User user);
 
     Optional<User> getUser(Long id);
@@ -21,4 +22,6 @@ public interface UserStorage {
     Optional<Collection<User>> getCommonFriends(Long userId, Long friendId);
 
     Optional<Collection<User>> getFriends(Long userId);
+
+    void deleteUserById(Long userId);
 }

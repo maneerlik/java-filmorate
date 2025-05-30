@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.FriendshipException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enumeration.EventOperation;
+import ru.yandex.practicum.filmorate.model.enumeration.EventType;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 
@@ -19,11 +21,14 @@ import java.util.Optional;
 @Slf4j
 @Validated
 public class UserService {
+
     private final UserStorage userStorage;
+    private final FeedService feedService;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(UserStorage userStorage, FeedService feedService) {
         this.userStorage = userStorage;
+        this.feedService = feedService;
     }
 
 
@@ -44,8 +49,9 @@ public class UserService {
 
     public User update(@Validated(UpdateValidationGroup.class) @RequestBody User user) {
         Optional<User> updatedUser = userStorage.updateUser(user);
-        if (updatedUser.isEmpty())
+        if (updatedUser.isEmpty()) {
             throw new NotFoundException(String.format("User with id=%s not found", user.getId()));
+        }
         log.info("User updated: {}", updatedUser);
         return updatedUser.get();
     }
@@ -53,12 +59,14 @@ public class UserService {
     public void addFriend(Long userId, Long friendId) {
         userStorage.addFriend(userId, friendId)
                 .orElseThrow(() -> new FriendshipException("Failed to add friend"));
+        feedService.addEvent(userId, EventType.FRIEND, EventOperation.ADD, friendId);
         log.info("Friendship created between {} and {}", userId, friendId);
     }
 
     public void removeFriend(Long userId, Long friendId) {
         userStorage.removeFriend(userId, friendId)
                 .orElseThrow(() -> new FriendshipException("Friendship not found"));
+        feedService.addEvent(userId, EventType.FRIEND, EventOperation.REMOVE, friendId);
         log.info("Friendship removed between {} and {}", userId, friendId);
     }
 
@@ -70,5 +78,9 @@ public class UserService {
     public Collection<User> getFriends(Long userId) {
         return userStorage.getFriends(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    public void deleteUserById(Long userId) {
+        userStorage.deleteUserById(userId);
     }
 }

@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.exception.*;
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
+
     private static final String ERROR_HEADER = """
             \n================================================= ERROR =================================================
             Message: {}
@@ -39,7 +40,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFound(final NotFoundException e) {
+    public ErrorResponse handleNotFound(NotFoundException e) {
         return new ErrorResponse("Not Found", e.getMessage());
     }
 

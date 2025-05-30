@@ -12,15 +12,18 @@ import ru.yandex.practicum.filmorate.validation.UpdateValidationGroup;
 import ru.yandex.practicum.filmorate.validation.film.ReleaseDate;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Класс {@code Film} - модель фильма
  *
  * <p>Аннотация {@code @Data} автоматически генерирует геттеры, сеттеры, методы {@code equals()},
- * {@code hashCode()}, а также {@code toString()}. Аннотация {@code @NoArgsConstructor} автоматически генерирует
- * конструктор по умолчанию, который необходим при сериализации/десериализации объектов JSON</p>
+ * {@code hashCode()}, а также {@code toString()}. Аннотация {@code @NoArgsConstructor}
+ * автоматически генерирует конструктор по умолчанию, который необходим при
+ * сериализации/десериализации объектов JSON</p>
  *
  * <p>Поля класса:</p>
  * <ul>
@@ -65,7 +68,9 @@ public class Film {
     @NotNull(message = "MPAA rating cannot be empty", groups = Default.class)
     private MpaRating mpa;
 
-    private Set<Genre> genres = new HashSet<>();
+    private List<Genre> genres = new ArrayList<>();
+
+    private List<Director> directors = new ArrayList<>();
 
     private Set<Long> likes = new HashSet<>();
 }

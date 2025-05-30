@@ -13,6 +13,7 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/mpa")
 public class MpaRatingController {
+
     private final MpaRatingService mpaRatingService;
 
     public MpaRatingController(MpaRatingService mpaRatingService) {
